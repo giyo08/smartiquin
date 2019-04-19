@@ -1,14 +1,14 @@
 # smartiquin
 Proyecto para la cátedra SOA de la UNLaM
 
-Integrantes:
+**Integrantes:**
 
-Alberto, Gisele Romina		34.154.196
-Benitez, Gerardo Abel		25.883.409
-Coradini, Gonzalo		38.946.395
-Vázquez, Lucia Maité		40.886.803
+*Alberto, Gisele Romina		34.154.196
+*Benitez, Gerardo Abel		25.883.409
+*Coradini, Gonzalo		38.946.395
+*Vázquez, Lucia Maité		40.886.803
 
-Descripción:
+**Descripción:**
 
 Un botiquín que pueda controlar los valores aceptables en los que debe almacenarse algún medicamento, pudiendo tener el control de la temperatura y humedad del mismo, y su exposición a la luz.
 
