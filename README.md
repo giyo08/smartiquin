@@ -1,4 +1,4 @@
-# smartiquin
+# Smartiquin
 Proyecto para la cátedra SOA de la UNLaM
 
 **Integrantes:**
