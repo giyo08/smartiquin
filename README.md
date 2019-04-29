@@ -3,10 +3,10 @@ Proyecto para la cátedra SOA de la UNLaM
 
 **Integrantes**
 
-* Alberto, Gisele Romina	   	34.154.196
-* Benítez, Gerardo Abel		    25.883.409
-* Coradini, Gonzalo Fabián		38.946.395
-* Vázquez, Lucia Maité	    	40.886.803
+  * Alberto, Gisele Romina	   	34.154.196
+  * Benítez, Gerardo Abel		    25.883.409
+  * Coradini, Gonzalo Fabián		38.946.395
+  * Vázquez, Lucia Maité	    	40.886.803
 
 **Descripción**
 
@@ -14,9 +14,11 @@ Proyecto para la cátedra SOA de la UNLaM
 
 **Hardware a utilizar**
 
-Sensores: *sensor de humedad, switch, sensor de luz.*
-Actuadores: *luces led, buzzer, servo motor.*
-Otros: *placa Arduino, 2 potencias de 5v, cables, resistencias, relay, protoboard.*
+  Sensores: *sensor de humedad, switch, sensor de luz.*
+
+  Actuadores: *luces led, buzzer, servo motor.*
+
+  Otros: *placa Arduino, 2 potencias de 5v, cables, resistencias, relay, protoboard.*
 
 **Descripción de la implementación**
 
