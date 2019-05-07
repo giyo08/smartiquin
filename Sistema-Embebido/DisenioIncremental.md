@@ -6,13 +6,13 @@ Para la versión inicial vamos a usar como sensores algunos pulsadores, y variab
 En nuestra configuracion inicial usaremos
 
 ### Componentes: 
-Servo = led rojo
-Buzzer = Led azul
-SensorHumedad = Variable
-SensorLuz = SensorLuz
-Switch01 = pulsador01
-Switch02 = pulsador02
-Switch03 = pulsador03
+* Servo = led rojo
+* Buzzer = Led azul
+* SensorHumedad = Variable
+* SensorLuz = SensorLuz
+* Switch01 = pulsador01
+* Switch02 = pulsador02
+* Switch03 = pulsador03
 
 ### Procedimiento 
 Conexiones componente a componente
