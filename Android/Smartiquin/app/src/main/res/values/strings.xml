@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Smartiquin</string>
+    <string name="botonDesbloquear">Desbloquear botiquín</string>
+    <string name="botonBloquear">Bloquear botiquín</string>
+    <string name="botonFarmacia">Buscar farmacias</string>
+    <string name="botonHuella">Validar huella digital</string>
+    <string name="botonAbrir">Abrir</string>
+    <string name="textNoHW">No se encontro el hardware para la lectura de huellas dactilares</string>
+</resources>
