@@ -1,12 +1,12 @@
 // pines digitales
-byte swith01 = 1; //en principio son pulsadores
-byte swith02 = 2;
-byte swith03 = 3;
-byte LED_Red01 = 4;
-byte LED_Blue01 = 5;
-byte servo01 = 5; //en principio se trata de un led azul
+byte switch01 = 3; 
+byte switch02 = 4;
+byte switch03 = 5;
+byte LED_Red01 = 7;
+byte LED_Blue01 = 11;
+byte servo01 = 11; //en principio se trata de un led azul
 
-byte pulsador01 = 2; 
+byte pulsador01 = 12; //Por ahora deshabilitado 
 byte ldr01 = A4; 
 
 //parametros
@@ -17,7 +17,11 @@ byte HUMEDAD_MAX = 90;
 byte LUMINOSIDAD_MIN = 10; 
 byte LUMINOSIDAD_MAX = 70; 
   
-int abierto = 1; 
+int abierto = 0;
+int cerrado = 1;
+int pulsado = 1;
+int encendido = 1;
+int apagado = 0; 
 int abrir_pestillo = 0; 
 
 //relacionadas al tiempo y las esperas
@@ -46,6 +50,7 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(servo01, OUTPUT); 
   pinMode(pulsador01, INPUT);
+  //digitalWrite(pulsador01, HIGH);
   Serial.begin(9600);
 
 
@@ -68,24 +73,44 @@ void chequear_humedad(){};
 void chequear_luminosidad(){};
 
 void encender_apagar_led(byte led, int veces){
-  unsigned long t_actual = 0; 
+  unsigned long t_actual; 
   unsigned long t_previo = 0; 
-  unsigned long interval = 50; 
-  for(int x=0; x<veces; x++){
+  unsigned long interval = 750;
+  int cumplidas=0;
+  int estado_proximo;
+  while(cumplidas<veces+1){   
+    t_actual = millis();
     if( intervalo_cumplido_p(t_actual, t_previo, interval) ){
-      digitalWrite(led, !digitalRead(led)); 
-      t_previo = t_actual; 
+      Serial.print("\n*************** Intervalo cumplido, PRENDER*************");
+      estado_proximo = !digitalRead(led);
+      digitalWrite(led, estado_proximo); 
+      t_previo = t_actual;
+      if(estado_proximo==encendido){
+        cumplidas++;
+      } 
     }  
   }
+  digitalWrite(led, LOW);
     
 }
 
+int ledApagado(byte led){
+  return digitalRead(led)==0;   
+}
 
 
-void actuar_switch_abierto(byte pSwitch){
-  byte estado = digitalRead(pSwitch);
-  if(estado == abierto){
-    encender_apagar_led(LED_Red01, 5); 
+void actuar_switch01(){
+  byte switchPulsado = digitalRead(switch01);
+  if(switchPulsado && ledApagado(LED_Blue01)){
+    encender_apagar_led(LED_Blue01, 1); 
+  }
+}
+
+
+void actuar_switch02(){
+  byte switchPulsado = digitalRead(switch02);
+  if(switchPulsado && ledApagado(LED_Blue01)){
+    encender_apagar_led(LED_Blue01, 2); 
   }
 }
 
@@ -95,9 +120,8 @@ han sido desactivados, es decir, se tomo la caja de medicamentos
 de uno de los slots
 */
 void chequear_extraccion(){
-  actuar_switch_abierto(swith01);
-  actuar_switch_abierto(swith02);
-  actuar_switch_abierto(swith03);
+  actuar_switch01();
+  actuar_switch02();
 }
 
 /**
@@ -113,19 +137,22 @@ void chequear_apertura(){
   }
 }
 
+
+
 void chequear_pulsador(){
-  int v_ldr = digitalRead(pulsador01); 
-  if( v_ldr == HIGH ){
+  //int v_ldr = digitalRead(pulsador01);
+  delay(50);
+  int v_pulsador = digitalRead(pulsador01); 
+  if( v_pulsador == HIGH and digitalRead(servo01)==LOW ){
     //abrir_pestillo = 1;  
     digitalWrite(servo01, HIGH); 
 
   }else{
     //abrir_pestillo = 0;   
     digitalWrite(servo01, LOW); 
-
   }
   Serial.print("\nvalor pulsador: "); 
-  Serial.print(v_ldr); 
+  Serial.print(v_pulsador); 
   
 }
 
@@ -134,11 +161,11 @@ void loop() {
   // put your main code here, to run repeatedly: 
   tiempo = millis();
   if( intervalo_cumplido() ){
-    chequear_humedad(); 
-    chequear_luminosidad();
+    //chequear_humedad(); 
+    //chequear_luminosidad();
     chequear_extraccion(); 
-    chequear_pulsador(); 
-    chequear_apertura();
+    //chequear_pulsador(); 
+    //chequear_apertura();
     tiempo_anterior = tiempo; 
   }
 }
