@@ -1,3 +1,5 @@
+#include <DHT.h>
+
 // pines digitales
 byte swith01 = 1; //en principio son pulsadores
 byte swith02 = 2;
@@ -6,16 +8,26 @@ byte LED_Red01 = 4;
 byte LED_Blue01 = 5;
 byte servo01 = 5; //en principio se trata de un led azul
 
+// Sensor Temperatura y Humedad
+#define DHTTYPE DHT11 // Declaramos el modelo de sensor a utilizar
+byte DHTPin = 2;
+byte HUMEDAD_MIN = 20; 
+byte HUMEDAD_MAX = 90;
+
+DHT dht(DHTPin, DHTTYPE); // Inicializamos la variable de comunicación entre el sensor y Arduino
+
 byte pulsador01 = 2; 
-byte ldr01 = A4; 
+ 
+// Sensor Fotoresistor
+byte LDRPin = A4; 
+byte LUMINOSIDAD_MIN = 10; 
+byte LUMINOSIDAD_MAX = 70; 
 
 //parametros
 int MINUTO = 60000;
 int TIEMPO_CHEQUEO = 2*MINUTO;
-byte HUMEDAD_MIN = 20; 
-byte HUMEDAD_MAX = 90;
-byte LUMINOSIDAD_MIN = 10; 
-byte LUMINOSIDAD_MAX = 70; 
+
+
   
 int abierto = 1; 
 int abrir_pestillo = 0; 
@@ -23,7 +35,7 @@ int abrir_pestillo = 0;
 //relacionadas al tiempo y las esperas
 unsigned long tiempo = 0; 
 unsigned long tiempo_anterior = 0; 
-unsigned long intervalo = 200; 
+unsigned long intervalo = 2000; 
 
 bool intervalo_cumplido(){
   return ((tiempo - tiempo_anterior) > intervalo);  
@@ -47,7 +59,7 @@ void setup() {
   pinMode(servo01, OUTPUT); 
   pinMode(pulsador01, INPUT);
   Serial.begin(9600);
-
+  dht.begin();
 
   obtener_parametros_externos();
 }
@@ -58,7 +70,26 @@ void setup() {
  * caso contrario, actua en consecuencia llamando a los actuadores
  * correspondientes.
  */
-void chequear_humedad(){};
+void chequear_humedad(){
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  
+  if (isnan(h) || isnan(t)) {
+      Serial.print("Falló al leer del sensor");
+      return;
+   }
+
+   if ( h < HUMEDAD_MIN || h > HUMEDAD_MAX ) {
+      Serial.print("Humedad: ");
+      Serial.print(h);
+      Serial.print("%\t");
+      encender_buzzer();
+   }
+ }
+
+ void encender_buzzer() {
+  Serial.println("Buzzer encendido!!");
+ }
 
 /**
  * Chequea que la luminosidad no exeda los rangos minimos y maximos
