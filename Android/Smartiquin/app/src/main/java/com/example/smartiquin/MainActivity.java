@@ -11,8 +11,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
-///NOTA: AUNQUE PARECE QUE ESTA TODO DESACOMODADO EN LA VISTA , EN MI CELULAR ESTA PERFECTAMENTE ALINEADO XD
+///NOTA: AUNQUE PARECE QUE ESTA TOD0 DESACOMODADO EN LA VISTA , EN MI CELULAR ESTA PERFECTAMENTE ALINEADO XD
 ///NO SE PORQUE :)
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     ///Sensores
     private SensorManager sm;
     private Sensor sensorShake;
+    private Sensor sensorProx;
 
     ///Variables para Shake
     private static final float LIMITE_SHAKE = 75;
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         ///AHORA PARA PRUEBAS LO PONGO EN CERRADO
         estadoBotiquin = E_CERRADO;
 
-        ///Seteo como esta el botiquin y habilito/deshabilito botones
+        ///Set como esta el botiquin y habilito/deshabilito botones
         if(estadoBotiquin == E_ABIERTO){
             tvEstBot.setText(S_ABIERTO);
             btnAbrir.setEnabled(false);
@@ -74,19 +76,28 @@ public class MainActivity extends AppCompatActivity {
         ///Asigno sensores
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorShake = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
+        sensorProx = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        ///ACA VOY A ESTAR (CON UN THREAD) ESPERANDO QUE EL ARDUINO ME MANDE QUE EL BUZZER SE ENCENDIO
+        ///CUANDO LO HAGA VOY A ACTIVAR EL SENSOR DE PROXIMIDAD
+        //sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+
+        ///SI CIERRO LA APLICACION Y EL SENSOR DE PROXIMIDAD ESTA ACTIVO LO VOY A CERRAR
+        ///ESTO HAY QUE PROBAR QUE PASA SI LO DEJO ACTIVO Y ESTA SUENA EL BUZZER Y LA APP ESTA MINIMIZADA
+        //sm.unregisterListener(proximitySensorListener);
     }
 
+    ///METODO ABRIR BOTIQUIN CON BOTON
     public void abrirBotiquin(View v){
 
         ///Valido por las dudas
@@ -102,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         btnAbrir.setEnabled(false);
     }
 
+    ///METODO CERRAR BOTIQUIN CON BOTON
     public void cerrarBotiquin(View v){
 
         //Valido por las dudas
@@ -117,32 +129,39 @@ public class MainActivity extends AppCompatActivity {
         btnAbrir.setEnabled(true);
     }
 
+    ///METODO HABILITAR EL SHAKE CON SWITCH
     public void habilitarShake(View v){
 
         ///SI HABILITO ABRIR/CERRAR AGITANDO
         if(switchShake.isChecked()){
             btnAbrir.setEnabled(false);
-            btnAbrir.setEnabled(false);
+            btnCerrar.setEnabled(false);
 
             ///HABILITO LA LECTURA DEL SENSOR
             sm.registerListener(shakeSensorListener,sensorShake,SensorManager.SENSOR_DELAY_GAME);
+
+            Toast.makeText(getApplicationContext(),"Shake habilitado",Toast.LENGTH_SHORT).show();
+
         }
         ///NO ESTA SELECCIONADO, habilito los botones que corresponden
         else{
+
             if(estadoBotiquin == E_ABIERTO){
-                btnAbrir.setEnabled(false);
                 btnCerrar.setEnabled(true);
-            }
-            else{
-                btnCerrar.setEnabled(false);
+                btnAbrir.setEnabled(false);
+            }else{
                 btnAbrir.setEnabled(true);
+                btnCerrar.setEnabled(false);
             }
 
             ///DESHABILITO LA LECTURA DEL SENSOR
             sm.unregisterListener(shakeSensorListener);
+
+            Toast.makeText(getApplicationContext(),"Shake deshabilitado",Toast.LENGTH_SHORT).show();
         }
     }
 
+    ///EVENTO ACELEROMETRO (SHAKE)
     SensorEventListener shakeSensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -184,7 +203,24 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+    };
 
+    ///EVENTO PROXIMIDAD
+    SensorEventListener proximitySensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent) {
+            if(sensorEvent.values[0] < sensorProx.getMaximumRange()){
+                ///ACA MANDO PARA APAGAR EL BUZZER
+
+                ///Y DESACTIVO EL SENSOR DE PROXIMIDAD
+                ///HAY QUE PROBAR SI LO PUEDO LLAMAR DESDE ACA A ESTO XD
+                //sm.unregisterListener(proximitySensorListener);
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {
         }
     };
 
