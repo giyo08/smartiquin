@@ -1,4 +1,7 @@
+#include <DHT.h>
+
 // pines digitales
+/*<<<<<<< HEAD:Sistema-Embebido/botiquin.ino
 byte switch01 = 3;
 byte switch02 = 4;
 byte switch03 = 5;
@@ -29,6 +32,44 @@ int abrir_pestillo = 0;
 unsigned long tiempo = 0;
 unsigned long tiempo_anterior = 0;
 unsigned long intervalo = 200;
+*/
+/*=======*/
+byte swith01 = 1; //en principio son pulsadores
+byte swith02 = 2;
+byte swith03 = 3;
+byte LED_Red01 = 4;
+byte LED_Blue01 = 5;
+byte servo01 = 5; //en principio se trata de un led azul
+
+// Sensor Temperatura y Humedad
+#define DHTTYPE DHT11 // Declaramos el modelo de sensor a utilizar
+byte DHTPin = 2;
+byte HUMEDAD_MIN = 20; 
+byte HUMEDAD_MAX = 90;
+
+DHT dht(DHTPin, DHTTYPE); // Inicializamos la variable de comunicación entre el sensor y Arduino
+
+byte pulsador01 = 2; 
+ 
+// Sensor Fotoresistor
+byte LDRPin = A4; 
+byte LUMINOSIDAD_MIN = 10; 
+byte LUMINOSIDAD_MAX = 70; 
+
+//parametros
+int MINUTO = 60000;
+int TIEMPO_CHEQUEO = 2*MINUTO;
+
+
+  
+int abierto = 1; 
+int abrir_pestillo = 0; 
+
+//relacionadas al tiempo y las esperas
+unsigned long tiempo = 0; 
+unsigned long tiempo_anterior = 0; 
+unsigned long intervalo = 2000; 
+/*>>>>>>> 6ed58aed75d5017d0a6ad8935436d0cfe68a3ce9:Sistema-Embebido/botiquin/botiquin.ino*/
 
 /**
    Determina el tiempo que se tomara entre un cheque de estados
@@ -67,24 +108,34 @@ void setup() {
   pinMode(buzzer01, OUTPUT);
   //digitalWrite(pulsador01, HIGH);
   Serial.begin(9600);
-
+  dht.begin();
 
   obtener_parametros_externos();
 }
 
 
 /**
-   Chequea que la humedad no exeda los rangos minimos y maximos
-   caso contrario, actua en consecuencia llamando a los actuadores
-   correspondientes.
-*/
-void chequear_humedad() {
-  //Si excede el valor maximo activar buzzer
-  int valorHumedad = digitalRead(humedad01);
-  if (valorHumedad > HUMEDAD_MAX) {
-    //activar_buzzer();
-  }
-};
+ * Chequea que la humedad no exeda los rangos minimos y maximos 
+ * caso contrario, actua en consecuencia llamando a los actuadores
+ * correspondientes.
+ */
+void chequear_humedad(){
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  
+  if (isnan(h) || isnan(t)) {
+      Serial.print("Falló al leer del sensor");
+      return;
+   }
+
+   if ( h < HUMEDAD_MIN || h > HUMEDAD_MAX ) {
+      Serial.print("Humedad: ");
+      Serial.print(h);
+      Serial.print("%\t");
+      encender_buzzer(2000);
+   }
+ }
+
 
 /**
    Chequea que la luminosidad no exeda los rangos minimos y maximos
@@ -122,17 +173,8 @@ void encender_apagar_led(byte led, int veces) {
    - tiempo: es la cantidad de tiempo en milisegundos que debe permanecer encendido el buzzer
 */
 void encender_buzzer(int tiempo) {
-  unsigned long t_actual;
-  unsigned long t_previo = 0;
-  unsigned long interval = 350;
-  int cumplidas = 0;
-  int estado_proximo;
-  
-  t_actual = millis();
-  digitalWrite(buzzer01, HIGH);
-  if ( intervalo_particular_cumplido(t_actual, t_previo, interval) ) {
-    digitalWrite(buzzer01, LOW);  
-  }  
+  tone(buzzer01, 550, tiempo); 
+  Serial.println("Buzzer encendido por x tiempo"); //@todo: pasar por parametro el tiempo al print
 }
 
 
