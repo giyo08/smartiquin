@@ -2,25 +2,13 @@
 #include <DHT.h>
 
 SoftwareSerial BTserial(10,11); // RX | TX
-// pines digitales
-/*<<<<<<< HEAD:Sistema-Embebido/botiquin.ino
 
-//parametros
-byte HUMEDAD_MIN = 20;
-byte HUMEDAD_MAX = 90;
-byte LUMINOSIDAD_MIN = 10;
-byte LUMINOSIDAD_MAX = 70;
-
-
-
-*/
-/*=======*/
 byte switch01 = 3; //en principio son pulsadores
 byte switch02 = 4;
 byte switch03 = 5;
-byte LED_Red01 = 7;
+//byte LED_Red01 = 7;
 byte LED_Blue01 = 8;
-byte buzzer01 = 11; 
+byte buzzer01 = 7; 
 byte ldr01 = A4;
 
 // Sensor Temperatura y Humedad
@@ -93,7 +81,7 @@ void obtener_parametros_externos() {
 void setup() {
   // put your setup code here, to run once:
 
-  pinMode(buzzer01, OUTPUT);
+  pinMode(buzzer01, OUTPUT);  
   //digitalWrite(pulsador01, HIGH);
   Serial.begin(9600);
   dht.begin();
@@ -161,7 +149,7 @@ void encender_apagar_led(byte led, int veces) {
    - tiempo: es la cantidad de tiempo en milisegundos que debe permanecer encendido el buzzer
 */
 void encender_buzzer(int tiempo) {
-  tone(buzzer01, 550, tiempo); 
+  tone(buzzer01, 2000, tiempo); 
   Serial.println("Buzzer encendido por x tiempo"); //@todo: pasar por parametro el tiempo al print
 }
 
@@ -193,8 +181,9 @@ void actuar_switch02() {
   de uno de los slots
 */
 void chequear_extraccion() {
-  //actuar_switch01();
-  //actuar_switch02();
+  actuar_switch01();
+  actuar_switch02();
+  //actuar_switch03();
 }
 
 /**
@@ -237,15 +226,17 @@ void loop() {
   if ( intervalo_cumplido() ) {
     //chequear_humedad();
     //chequear_luminosidad();
-    //chequear_extraccion();
+    chequear_extraccion();
     //chequear_pulsador();
     //chequear_apertura();
     chequear_encender_buzzer();
     tiempo_anterior = tiempo;
     
-    if(BTserial.available())
+    //if(BTserial.available())
+    if(Serial.available())
     { 
-      comando_bt = BTserial.read();
+      //comando_bt = BTserial.read();
+      comando_bt = Serial.read();
       analizar_comando(comando_bt);
     }
   }
@@ -257,7 +248,7 @@ void analizar_comando(char comando){
       abrir_botiquin(); 
       break; 
     case 'e': 
-      encender_buzzer(2000);     
+      encender_buzzer(4000);     
       break; 
   }  
 }
@@ -265,7 +256,7 @@ void analizar_comando(char comando){
 void abrir_botiquin(){
   /*Llamar a funciones para abrir el electroiman*/
   /*Encender un led o el led indicativo de botiquin abierto*/
-  encender_apagar_led(LED_Red01, 5);  
+  encender_apagar_led(LED_Blue01, 5);  
 }
 
 void chequear_encender_buzzer(){
