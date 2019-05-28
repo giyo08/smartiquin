@@ -1,25 +1,33 @@
+#include <SoftwareSerial.h>
 #include <DHT.h>
 
+SoftwareSerial BTserial(10,11); // RX | TX
 // pines digitales
 /*<<<<<<< HEAD:Sistema-Embebido/botiquin.ino
-byte switch01 = 3;
-byte switch02 = 4;
-byte switch03 = 5;
-byte humedad01 = 13;
-byte LED_Red01 = 7;
-byte LED_Blue01 = 11;
-byte servo01 = 11; //en principio se trata de un led azul
-byte buzzer01 = 11; 
-byte pulsador01 = 12; //Por ahora deshabilitado
-byte ldr01 = A4;
 
 //parametros
-int MINUTO = 60000;
-int TIEMPO_CHEQUEO = 2 * MINUTO;
 byte HUMEDAD_MIN = 20;
 byte HUMEDAD_MAX = 90;
 byte LUMINOSIDAD_MIN = 10;
 byte LUMINOSIDAD_MAX = 70;
+
+
+
+*/
+/*=======*/
+byte switch01 = 3; //en principio son pulsadores
+byte switch02 = 4;
+byte switch03 = 5;
+byte LED_Red01 = 7;
+byte LED_Blue01 = 8;
+byte buzzer01 = 11; 
+byte ldr01 = A4;
+
+// Sensor Temperatura y Humedad
+#define DHTTYPE DHT11 // Declaramos el modelo de sensor a utilizar
+byte DHTPin = 2;
+byte HUMEDAD_MIN = 20; 
+byte HUMEDAD_MAX = 90;
 
 int abierto = 0;
 int cerrado = 1;
@@ -27,25 +35,6 @@ int pulsado = 1;
 int encendido = 1;
 int apagado = 0;
 int abrir_pestillo = 0;
-
-//relacionadas al tiempo y las esperas
-unsigned long tiempo = 0;
-unsigned long tiempo_anterior = 0;
-unsigned long intervalo = 200;
-*/
-/*=======*/
-byte swith01 = 1; //en principio son pulsadores
-byte swith02 = 2;
-byte swith03 = 3;
-byte LED_Red01 = 4;
-byte LED_Blue01 = 5;
-byte servo01 = 5; //en principio se trata de un led azul
-
-// Sensor Temperatura y Humedad
-#define DHTTYPE DHT11 // Declaramos el modelo de sensor a utilizar
-byte DHTPin = 2;
-byte HUMEDAD_MIN = 20; 
-byte HUMEDAD_MAX = 90;
 
 DHT dht(DHTPin, DHTTYPE); // Inicializamos la variable de comunicación entre el sensor y Arduino
 
@@ -56,20 +45,20 @@ byte LDRPin = A4;
 byte LUMINOSIDAD_MIN = 10; 
 byte LUMINOSIDAD_MAX = 70; 
 
-//parametros
-int MINUTO = 60000;
-int TIEMPO_CHEQUEO = 2*MINUTO;
-
-
-  
-int abierto = 1; 
-int abrir_pestillo = 0; 
 
 //relacionadas al tiempo y las esperas
-unsigned long tiempo = 0; 
-unsigned long tiempo_anterior = 0; 
-unsigned long intervalo = 2000; 
+unsigned long tiempo = 0;
+unsigned long tiempo_anterior = 0;
+unsigned long intervalo = 200;
+
+  
+
 /*>>>>>>> 6ed58aed75d5017d0a6ad8935436d0cfe68a3ce9:Sistema-Embebido/botiquin/botiquin.ino*/
+
+//Relacionadas al bluetooth 
+char comando_bt;
+
+enum Comandos { ABRIR, ENCONTRAR };
 
 /**
    Determina el tiempo que se tomara entre un cheque de estados
@@ -103,8 +92,7 @@ void obtener_parametros_externos() {
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(servo01, OUTPUT);
-  pinMode(pulsador01, INPUT);
+
   pinMode(buzzer01, OUTPUT);
   //digitalWrite(pulsador01, HIGH);
   Serial.begin(9600);
@@ -213,6 +201,7 @@ void chequear_extraccion() {
    Realiza la apertura de una puerta, es decir llama a actuar al servomotor
    para que mueva un pestillo
 */
+/*
 void chequear_apertura() {
   if (abrir_pestillo == 1) {
     digitalWrite(servo01, HIGH);
@@ -221,9 +210,9 @@ void chequear_apertura() {
     digitalWrite(LED_Blue01, LOW);
   }
 }
+*/
 
-
-
+/*
 void chequear_pulsador() {
   //int v_ldr = digitalRead(pulsador01);
   delay(50);
@@ -240,7 +229,7 @@ void chequear_pulsador() {
   Serial.print(v_pulsador);
 
 }
-
+*/
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -253,7 +242,30 @@ void loop() {
     //chequear_apertura();
     chequear_encender_buzzer();
     tiempo_anterior = tiempo;
+    
+    if(BTserial.available())
+    { 
+      comando_bt = BTserial.read();
+      analizar_comando(comando_bt);
+    }
   }
+}
+
+void analizar_comando(char comando){
+  switch(comando){
+    case 'a':
+      abrir_botiquin(); 
+      break; 
+    case 'e': 
+      encender_buzzer(2000);     
+      break; 
+  }  
+}
+
+void abrir_botiquin(){
+  /*Llamar a funciones para abrir el electroiman*/
+  /*Encender un led o el led indicativo de botiquin abierto*/
+  encender_apagar_led(LED_Red01, 5);  
 }
 
 void chequear_encender_buzzer(){
