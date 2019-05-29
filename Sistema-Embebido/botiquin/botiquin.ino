@@ -6,9 +6,10 @@ SoftwareSerial BTserial(10,11); // RX | TX
 byte switch01 = 3; //en principio son pulsadores
 byte switch02 = 4;
 byte switch03 = 5;
-//byte LED_Red01 = 7;
+byte buzzer01 = 7;
 byte LED_Blue01 = 8;
-byte buzzer01 = 7; 
+byte LED_Red01 = 9;
+
 byte ldr01 = A4;
 
 // Sensor Temperatura y Humedad
@@ -118,7 +119,10 @@ void chequear_humedad(){
    caso contrario, actua en consecuencia llamando a los actuadores
    correspondientes
 */
-void chequear_luminosidad() {};
+void chequear_luminosidad() {
+  Serial.print("\nLuminosidad: ");
+  Serial.print(analogRead(ldr01));
+};
 
 void encender_apagar_led(byte led, int veces) {
   unsigned long t_actual;
@@ -164,14 +168,26 @@ void actuar_switch01() {
   byte switchPulsado = digitalRead(switch01);
   if (switchPulsado && ledApagado(LED_Blue01)) {
     encender_apagar_led(LED_Blue01, 1);
+    
   }
 }
 
 
 void actuar_switch02() {
   byte switchPulsado = digitalRead(switch02);
-  if (switchPulsado && ledApagado(LED_Blue01)) {
-    encender_apagar_led(LED_Blue01, 2);
+  if (switchPulsado) {
+    encender_apagar_led(LED_Red01, 2);
+    //tambien prendo el buzzer, me gusta hacer ruido
+    tone(buzzer01, 3000, 500);
+  }
+}
+
+void actuar_switch03() {
+  byte switchPulsado = digitalRead(switch02);
+  if (switchPulsado) {
+    encender_apagar_led(LED_Red01, 3);
+    //tambien prendo el buzzer, me gusta hacer ruido
+    tone(buzzer01, 3500, 500);
   }
 }
 
@@ -183,7 +199,7 @@ void actuar_switch02() {
 void chequear_extraccion() {
   actuar_switch01();
   actuar_switch02();
-  //actuar_switch03();
+  actuar_switch03();
 }
 
 /**
@@ -225,11 +241,11 @@ void loop() {
   tiempo = millis();
   if ( intervalo_cumplido() ) {
     //chequear_humedad();
-    //chequear_luminosidad();
+    chequear_luminosidad();
     chequear_extraccion();
     //chequear_pulsador();
     //chequear_apertura();
-    chequear_encender_buzzer();
+    //chequear_encender_buzzer();
     tiempo_anterior = tiempo;
     
     //if(BTserial.available())
