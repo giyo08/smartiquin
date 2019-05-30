@@ -11,6 +11,7 @@ byte LED_Blue01 = 8;
 byte LED_Red01 = 9;
 
 byte ldr01 = A4;
+byte electro01 = A3; 
 
 // Sensor Temperatura y Humedad
 #define DHTTYPE DHT11 // Declaramos el modelo de sensor a utilizar
@@ -42,8 +43,7 @@ unsigned long intervalo = 200;
 
   
 
-/*>>>>>>> 6ed58aed75d5017d0a6ad8935436d0cfe68a3ce9:Sistema-Embebido/botiquin/botiquin.ino*/
-
+void encender_buzzer(int tiempo, int frecuencia=0);
 //Relacionadas al bluetooth 
 char comando_bt;
 
@@ -83,7 +83,6 @@ void setup() {
   // put your setup code here, to run once:
 
   pinMode(buzzer01, OUTPUT);  
-  //digitalWrite(pulsador01, HIGH);
   Serial.begin(9600);
   dht.begin();
 
@@ -152,8 +151,9 @@ void encender_apagar_led(byte led, int veces) {
    Parametros:
    - tiempo: es la cantidad de tiempo en milisegundos que debe permanecer encendido el buzzer
 */
-void encender_buzzer(int tiempo) {
-  tone(buzzer01, 2000, tiempo); 
+void encender_buzzer(int tiempo, int frecuencia) {
+  frecuencia ? frecuencia : 2000; 
+  tone(buzzer01, frecuencia, tiempo); 
   Serial.println("Buzzer encendido por x tiempo"); //@todo: pasar por parametro el tiempo al print
 }
 
@@ -161,6 +161,18 @@ void encender_buzzer(int tiempo) {
 
 int ledApagado(byte led) {
   return digitalRead(led) == 0;
+}
+
+
+/**
+  Este metodo se usa para identificar que alguno de los switch
+  han sido desactivados, es decir, se tomo la caja de medicamentos
+  de uno de los slots
+*/
+void chequear_extraccion() {
+  actuar_switch01();
+  actuar_switch02();
+  actuar_switch03();
 }
 
 
@@ -191,50 +203,8 @@ void actuar_switch03() {
   }
 }
 
-/**
-  Este metodo se usa para identificar que alguno de los switch
-  han sido desactivados, es decir, se tomo la caja de medicamentos
-  de uno de los slots
-*/
-void chequear_extraccion() {
-  actuar_switch01();
-  actuar_switch02();
-  actuar_switch03();
-}
 
-/**
-   Realiza la apertura de una puerta, es decir llama a actuar al servomotor
-   para que mueva un pestillo
-*/
-/*
-void chequear_apertura() {
-  if (abrir_pestillo == 1) {
-    digitalWrite(servo01, HIGH);
-    //abrir_pestillo = 0;
-  } else {
-    digitalWrite(LED_Blue01, LOW);
-  }
-}
-*/
 
-/*
-void chequear_pulsador() {
-  //int v_ldr = digitalRead(pulsador01);
-  delay(50);
-  int v_pulsador = digitalRead(pulsador01);
-  if ( v_pulsador == HIGH and digitalRead(servo01) == LOW ) {
-    //abrir_pestillo = 1;
-    digitalWrite(servo01, HIGH);
-
-  } else {
-    //abrir_pestillo = 0;
-    digitalWrite(servo01, LOW);
-  }
-  Serial.print("\nvalor pulsador: ");
-  Serial.print(v_pulsador);
-
-}
-*/
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -243,28 +213,29 @@ void loop() {
     //chequear_humedad();
     chequear_luminosidad();
     chequear_extraccion();
-    //chequear_pulsador();
-    //chequear_apertura();
-    //chequear_encender_buzzer();
     tiempo_anterior = tiempo;
     
     //if(BTserial.available())
     if(Serial.available())
     { 
-      //comando_bt = BTserial.read();
-      comando_bt = Serial.read();
-      analizar_comando(comando_bt);
+      leer_bluetooth();
     }
   }
 }
 
+void leer_bluetooth(){
+  //comando_bt = BTserial.read();
+  comando_bt = Serial.read();
+  analizar_comando(comando_bt);
+}
+
 void analizar_comando(char comando){
   switch(comando){
-    case 'a':
+    case 'a': 
       abrir_botiquin(); 
       break; 
-    case 'e': 
-      encender_buzzer(4000);     
+    case 'e': //Accion para encontrar al botiquin, si, se puede perder...
+      encender_buzzer(2000, 600);     
       break; 
   }  
 }
@@ -272,12 +243,6 @@ void analizar_comando(char comando){
 void abrir_botiquin(){
   /*Llamar a funciones para abrir el electroiman*/
   /*Encender un led o el led indicativo de botiquin abierto*/
+  //analogWrite(electro01, HIGH);
   encender_apagar_led(LED_Blue01, 5);  
-}
-
-void chequear_encender_buzzer(){
-  byte switchPulsado = digitalRead(switch01);
-  if (switchPulsado) {
-    tone(buzzer01, 550, 2000); 
-  }
 }
