@@ -1,5 +1,7 @@
 package com.example.smartiquin;
 
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     ///Botones, switchs, textViews
     private Button btnAbrir;
     private Button btnCerrar;
+    private Button btnMeds;
     private Switch switchShake;
     private TextView tvEstBot;
 
@@ -45,12 +48,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Setea la pantalla en modo portrait, no permitiendo que rote
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         ///Asigno a las variables su correspondiente cosa
         btnAbrir = findViewById(R.id.buttonAbrir);
         btnCerrar = findViewById(R.id.buttonCerrar);
+        btnMeds = findViewById(R.id.buttonMeds);
         tvEstBot = findViewById(R.id.textViewEstBot);
         switchShake = findViewById(R.id.switchShake);
 
@@ -77,6 +83,15 @@ public class MainActivity extends AppCompatActivity {
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorShake = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorProx = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+        // Listener para el botón de registro
+        btnMeds.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent nuevaVentana = new Intent(MainActivity.this, RegisterActivity.class);
+                startActivity(nuevaVentana);
+            }
+        });
     }
 
     @Override
