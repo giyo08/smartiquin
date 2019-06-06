@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private Switch switchShake;
     private TextView tvEstBot;
 
+
     ///EstadoBotiquin
     private Boolean estadoBotiquin;
     private static final Boolean E_ABIERTO = true;
@@ -41,11 +42,13 @@ public class MainActivity extends AppCompatActivity {
     private SensorManager sm;
     private Sensor sensorShake;
     private Sensor sensorProx;
+    private Sensor sensorLuz;
 
     ///Variables para Shake
     private static final float LIMITE_SHAKE = 75;
     private long ultShake = 0;
     private Vibrator v;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorShake = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorProx = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        sensorLuz = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
 
         // Listener para el botón de registro
         btnMeds.setOnClickListener(new View.OnClickListener() {
@@ -92,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(nuevaVentana);
             }
         });
+
     }
 
     @Override
@@ -118,10 +123,14 @@ public class MainActivity extends AppCompatActivity {
 
             if(estadoBotiquin == E_ABIERTO){
                 botiquinCerrado();
-                ///ENVIO DE DATO AL ARDUINO
+                ///ENVIO DATO CERRAR AL ARDUINO
             }else{
                 botiquinAbierto();
-                ///ENVIO DE DATO AL ARDUINO
+                ///ENVIO DATO ABRIR AL ARDUINO
+
+                ///Cuando abro el botiquin activo el sensor de luz para saber si prendo el led?
+                //sm.registerListener(luzSensorListener,sensorLuz,SensorManager.SENSOR_DELAY_NORMAL);
+
             }
 
         }
@@ -215,6 +224,28 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {
+        }
+    };
+
+    ///EVENTO LUZ
+    SensorEventListener luzSensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+
+            ///Poca luz?
+            if(event.values[0] < 10){
+                ///Encender led?
+
+            }else{
+                ///Apagar led?
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+
+
         }
     };
 
