@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">Smartiquin</string>
-    <string name="btnAbrir">Abrir</string>
-    <string name="btnCerrar">Cerrar</string>
     <string name="switchShake">Abrir/Cerrar agitando</string>
     <string name="textViewBotiquin">Botiquin</string>
     <string name="btnMeds">Registro Medicamentos</string>

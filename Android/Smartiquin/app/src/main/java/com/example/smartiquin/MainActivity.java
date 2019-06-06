@@ -21,8 +21,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     ///Botones, switchs, textViews
-    private Button btnAbrir;
-    private Button btnCerrar;
+    private Button btnAbrirCerrar;
     private Button btnMeds;
     private Switch switchShake;
     private TextView tvEstBot;
@@ -35,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     ///String
     private static final String S_ABIERTO = "ABIERTO";
     private static final String S_CERRADO = "CERRADO";
+    private static final String S_ABRIR = "Abrir";
+    private static final String S_CERRAR = "Cerrar";
 
     ///Sensores
     private SensorManager sm;
@@ -54,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ///Asigno a las variables su correspondiente cosa
-        btnAbrir = findViewById(R.id.buttonAbrir);
-        btnCerrar = findViewById(R.id.buttonCerrar);
+        btnAbrirCerrar = findViewById(R.id.buttonAbrirCerrar);
         btnMeds = findViewById(R.id.buttonMeds);
         tvEstBot = findViewById(R.id.textViewEstBot);
         switchShake = findViewById(R.id.switchShake);
@@ -63,19 +63,19 @@ public class MainActivity extends AppCompatActivity {
         //Seteo el switch en falso
         switchShake.setChecked(false);
 
+        ///Asigno a boton su listener correspondiente
+        btnAbrirCerrar.setOnClickListener(btnAbrirCerrarListener);
+
         ///ACA TENGO QUE SETEAR EN QUE ESTADO ESTA EL BOTIQUIN DEPENDE DE LO QUE ME ENVIE EL ARDUINO
         ///AHORA PARA PRUEBAS LO PONGO EN CERRADO
         estadoBotiquin = E_CERRADO;
 
         ///Set como esta el botiquin y habilito/deshabilito botones
-        if(estadoBotiquin == E_ABIERTO){
-            tvEstBot.setText(S_ABIERTO);
-            btnAbrir.setEnabled(false);
-        }
-        else{
-            tvEstBot.setText(S_CERRADO);
-            btnCerrar.setEnabled(false);
-        }
+        if(estadoBotiquin == E_ABIERTO)
+            botiquinAbierto();
+        else
+            botiquinCerrado();
+
 
         v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
@@ -108,51 +108,33 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
 
         ///SI CIERRO LA APLICACION Y EL SENSOR DE PROXIMIDAD ESTA ACTIVO LO VOY A CERRAR
-        ///ESTO HAY QUE PROBAR QUE PASA SI LO DEJO ACTIVO Y ESTA SUENA EL BUZZER Y LA APP ESTA MINIMIZADA
+        ///ESTO HAY QUE PROBAR QUE PASA SI LO DEJO ACTIVO Y SUENA EL BUZZER Y LA APP ESTA MINIMIZADA
         //sm.unregisterListener(proximitySensorListener);
     }
 
-    ///METODO ABRIR BOTIQUIN CON BOTON
-    public void abrirBotiquin(View v){
+    View.OnClickListener btnAbrirCerrarListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
 
-        ///Valido por las dudas
-        if(estadoBotiquin == E_ABIERTO)
-            return;
+            if(estadoBotiquin == E_ABIERTO){
+                botiquinCerrado();
+                ///ENVIO DE DATO AL ARDUINO
+            }else{
+                botiquinAbierto();
+                ///ENVIO DE DATO AL ARDUINO
+            }
 
-        tvEstBot.setText(S_ABIERTO);
-
-        ///ACA DEBERIA MANDAR AL ARDUINO ALGO PARA INDICAR QUE SE ABRA
-
-        ///Habilito/deshabilito botones
-        btnCerrar.setEnabled(true);
-        btnAbrir.setEnabled(false);
-    }
-
-    ///METODO CERRAR BOTIQUIN CON BOTON
-    public void cerrarBotiquin(View v){
-
-        //Valido por las dudas
-        if(estadoBotiquin = E_CERRADO)
-            return;
-
-        tvEstBot.setText(S_CERRADO);
-
-        //ACA DEBERIA MANDAR AL ARDUINO ALGO PARA INDICAR QUE SE CIERRE
-
-        ///Habilito/deshabilito botones
-        btnCerrar.setEnabled(false);
-        btnAbrir.setEnabled(true);
-    }
+        }
+    };
 
     ///METODO HABILITAR EL SHAKE CON SWITCH
     public void habilitarShake(View v){
 
         ///SI HABILITO ABRIR/CERRAR AGITANDO
         if(switchShake.isChecked()){
-            btnAbrir.setEnabled(false);
-            btnCerrar.setEnabled(false);
+           btnAbrirCerrar.setEnabled(false);
 
-            ///HABILITO LA LECTURA DEL SENSOR
+           ///HABILITO LA LECTURA DEL SENSOR
             sm.registerListener(shakeSensorListener,sensorShake,SensorManager.SENSOR_DELAY_GAME);
 
             Toast.makeText(getApplicationContext(),"Shake habilitado",Toast.LENGTH_SHORT).show();
@@ -161,13 +143,12 @@ public class MainActivity extends AppCompatActivity {
         ///NO ESTA SELECCIONADO, habilito los botones que corresponden
         else{
 
-            if(estadoBotiquin == E_ABIERTO){
-                btnCerrar.setEnabled(true);
-                btnAbrir.setEnabled(false);
-            }else{
-                btnAbrir.setEnabled(true);
-                btnCerrar.setEnabled(false);
-            }
+            btnAbrirCerrar.setEnabled(true);
+
+            if(estadoBotiquin == E_ABIERTO)
+                botiquinAbierto();
+            else
+                botiquinCerrado();
 
             ///DESHABILITO LA LECTURA DEL SENSOR
             sm.unregisterListener(shakeSensorListener);
@@ -202,13 +183,11 @@ public class MainActivity extends AppCompatActivity {
                     ultShake = tiempoAct;
 
                     if(estadoBotiquin == E_CERRADO){
-                        tvEstBot.setText(S_ABIERTO);
-                        estadoBotiquin = E_ABIERTO;
+                        botiquinAbierto();
                         v.vibrate(100);
                     }
                     else{
-                        tvEstBot.setText(S_CERRADO);
-                        estadoBotiquin = E_CERRADO;
+                        botiquinCerrado();
                         v.vibrate(100);
                     }
                 }
@@ -230,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
 
                 ///Y DESACTIVO EL SENSOR DE PROXIMIDAD
                 ///HAY QUE PROBAR SI LO PUEDO LLAMAR DESDE ACA A ESTO XD
-                //sm.unregisterListener(proximitySensorListener);
+                sm.unregisterListener(proximitySensorListener);
             }
         }
 
@@ -238,5 +217,19 @@ public class MainActivity extends AppCompatActivity {
         public void onAccuracyChanged(Sensor sensor, int i) {
         }
     };
+
+    private void botiquinAbierto(){
+
+        btnAbrirCerrar.setText(S_CERRAR);
+        estadoBotiquin = E_ABIERTO;
+        tvEstBot.setText(S_ABIERTO);
+    }
+
+    private void botiquinCerrado(){
+
+        btnAbrirCerrar.setText(S_ABRIR);
+        estadoBotiquin = E_CERRADO;
+        tvEstBot.setText(S_CERRADO);
+    }
 
 }
