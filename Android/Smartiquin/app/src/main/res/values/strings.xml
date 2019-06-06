@@ -10,6 +10,10 @@
     <string name="tilNombreMed">Nombre</string>
     <string name="tilLabMed">Laboratorio</string>
     <string name="tilVencMed">Fecha de Vencimiento</string>
+    <string name="tilMedInic">Cantidad de Medicamentos</string>
+    <string name="tilAlertaMed">Cantidad Minima</string>
+    <string name="rbtnDia">Dia</string>
+    <string name="rbtnNoche">Noche</string>
     <string name="btnAceptar">Aceptar</string>
     <string name="btnCancelar">Cancelar</string>
 </resources>

@@ -16,6 +16,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
@@ -26,12 +27,20 @@ import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
 public class FormActivity extends AppCompatActivity {
+
+    // Text input layouts, sus respectivos edit texts, radio buttons  y botones
     private TextInputLayout tilNombreMed;
     private TextInputLayout tilLabMed;
     private TextInputLayout tilVencMed;
+    private TextInputLayout tilMedInic;
+    private TextInputLayout tilAlertaMed;
     private TextInputEditText etNombreMed;
     private TextInputEditText etLabMed;
     private TextInputEditText etVencMed;
+    private TextInputEditText etMedInic;
+    private TextInputEditText etAlarmaMed;
+    private RadioButton rbtnDia;
+    private RadioButton rbtnNoche;
     private Button btnAceptar;
     private Button btnCancelar;
 
@@ -44,12 +53,21 @@ public class FormActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
 
+        // Asigno las variables con sus elementos en la vista
         tilNombreMed = findViewById(R.id.textInputNombre);
         tilLabMed = findViewById(R.id.textInputLaboratorio);
         tilVencMed = findViewById(R.id.textInputVencimiento);
+        tilMedInic = findViewById(R.id.textInputCantMed);
+        tilAlertaMed = findViewById(R.id.textInputAlertaMed);
+
         etNombreMed = findViewById(R.id.editTextNombre);
         etLabMed = findViewById(R.id.editTextLab);
         etVencMed = findViewById(R.id.editTextVenc);
+        etMedInic = findViewById(R.id.editTextCantMed);
+        etAlarmaMed = findViewById(R.id.editTextAlertaMed);
+
+        rbtnDia = findViewById(R.id.radioButtonDia);
+        rbtnNoche = findViewById(R.id.radioButtonNoche);
 
         btnAceptar = findViewById(R.id.buttonAceptar);
         btnCancelar = findViewById(R.id.buttonCancelar);
@@ -106,8 +124,8 @@ public class FormActivity extends AppCompatActivity {
         String fecha = etVencMed.getText().toString();
 
 
-        boolean n = nombreValido(nombre);
-        boolean l = laboratorioValido(laboratorio);
+        boolean n = nombreValido(nombre, tilNombreMed);
+        boolean l = nombreValido(laboratorio, tilLabMed);
         boolean f = fechaValida(fecha);
 
         if(n && l && f) {
@@ -115,25 +133,13 @@ public class FormActivity extends AppCompatActivity {
         }
     }
 
-    private boolean nombreValido(String nombre) {
+    private boolean nombreValido(String nombre, TextInputLayout campo) {
         Pattern patron = Pattern.compile("^[a-zA-Z ]+$");
         if (!patron.matcher(nombre).matches() || nombre.length() > 30) {
-            etNombreMed.setError("No debe ser mayor a 30 caracteres alfanumericos");
+            campo.setError("Maximo 30 caracteres alfanumericos");
             return false;
         } else {
-            tilNombreMed.setError(null);
-        }
-
-        return true;
-    }
-
-    private boolean laboratorioValido(String nombre) {
-        Pattern patron = Pattern.compile("^[a-zA-Z ]+$");
-        if (!patron.matcher(nombre).matches() || nombre.length() > 30) {
-            tilLabMed.setError("No debe ser mayor a 30 caracteres alfanumericos");
-            return false;
-        } else {
-            tilLabMed.setError(null);
+            campo.setError(null);
         }
 
         return true;

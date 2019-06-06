@@ -12,10 +12,13 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class RegisterActivity extends AppCompatActivity {
+
+    // Botones y list view
     private Button btnAgregar;
     private Button btnEliminar;
     private ListView lviewMeds;
 
+    // Arrays para almacenar los medicamentos que se ingresen
     private ArrayAdapter<String> adaptador;
     private ArrayList<String> myString;
 
@@ -26,10 +29,12 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Asigno las variables con sus elementos en la vista
         lviewMeds = findViewById(R.id.listviewMeds);
         btnAgregar = findViewById(R.id.buttonAdd);
         btnEliminar = findViewById(R.id.buttonDelete);
 
+        // Datos mockeados hasta desarrollar el intercambio de data entre activities
         myString = new ArrayList<String>();
 
         myString.add("Ribotril");

@@ -10,10 +10,11 @@
     <android.support.design.widget.TextInputLayout
         android:id="@+id/textInputNombre"
         android:layout_width="252dp"
-        android:layout_height="50dp"
+        android:layout_height="70dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
+        app:errorEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -23,18 +24,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/tilNombreMed"
-            android:textColorHighlight="#E91E63" />
+            android:textColorHighlight="#E91E63"
+            android:textSize="16sp" />
 
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/textInputLaboratorio"
         android:layout_width="252dp"
-        android:layout_height="50dp"
+        android:layout_height="70dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        app:errorEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.538"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputNombre">
 
@@ -42,17 +46,19 @@
             android:id="@+id/editTextLab"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/tilLabMed" />
+            android:hint="@string/tilLabMed"
+            android:textSize="16sp" />
 
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/textInputVencimiento"
         android:layout_width="252dp"
-        android:layout_height="50dp"
+        android:layout_height="70dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        app:errorEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputLaboratorio">
@@ -62,15 +68,92 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/tilVencMed"
-            android:inputType="number" />
+            android:inputType="number"
+            android:textSize="16sp" />
     </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/textInputCantMed"
+        android:layout_width="252dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputVencimiento">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/editTextCantMed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/tilMedInic"
+            android:inputType="numberDecimal"
+            android:textSize="16sp" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/textInputAlertaMed"
+        android:layout_width="250dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.518"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputCantMed">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/editTextAlertaMed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/tilAlertaMed"
+            android:inputType="numberDecimal"
+            android:textSize="16sp" />
+    </android.support.design.widget.TextInputLayout>
+
+    <RadioGroup
+        android:id="@+id/radioGroupBotones"
+        android:layout_width="250dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.518"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputAlertaMed">
+
+        <RadioButton
+            android:id="@+id/radioButtonDia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:checked="true"
+            android:text="@string/rbtnDia"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/radioButtonNoche"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/rbtnNoche"
+            android:textSize="14sp" />
+    </RadioGroup>
 
     <Button
         android:id="@+id/buttonAceptar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="44dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="24dp"
         android:enabled="false"
         android:text="@string/btnAceptar"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -81,7 +164,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="44dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/btnCancelar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
