@@ -1,29 +1,22 @@
 package com.example.smartiquin;
 
-import android.app.DatePickerDialog;
+
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.os.Parcelable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class FormActivity extends AppCompatActivity {
@@ -34,15 +27,22 @@ public class FormActivity extends AppCompatActivity {
     private TextInputLayout tilVencMed;
     private TextInputLayout tilMedInic;
     private TextInputLayout tilAlertaMed;
+
     private TextInputEditText etNombreMed;
     private TextInputEditText etLabMed;
     private TextInputEditText etVencMed;
     private TextInputEditText etMedInic;
     private TextInputEditText etAlarmaMed;
+
     private RadioButton rbtnDia;
     private RadioButton rbtnNoche;
+
     private Button btnAceptar;
     private Button btnCancelar;
+
+    private String cadenaAEnviar;
+
+    private Intent intent;
 
     public int pos = 0;
 
@@ -76,16 +76,30 @@ public class FormActivity extends AppCompatActivity {
         etLabMed.addTextChangedListener(camposCompletosTextWatcher);
         etVencMed.addTextChangedListener(camposCompletosTextWatcher);
 
+        intent = new Intent(this, RegisterActivity.class);
 
         // Seteo el listener para el botón Aceptar
         btnAceptar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                validarDatos();
+                if(validarDatos()){
+                    mostrarMensaje("Medicamento registrado");
+                    intent.putExtra("medicamento",cadenaAEnviar);
+                    startActivity(intent);
+                    finish();
+                }else
+                    mostrarMensaje("Campos invalidos");
             }
         });
 
-
+        btnCancelar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent nuevaVentana = new Intent(FormActivity.this, RegisterActivity.class);
+                startActivity(nuevaVentana);
+                finish();
+            }
+        });
     }
 
     private TextWatcher camposCompletosTextWatcher = new TextWatcher() {
@@ -118,19 +132,28 @@ public class FormActivity extends AppCompatActivity {
         }
     };
 
-    private void validarDatos() {
+    private boolean validarDatos() {
         String nombre = etNombreMed.getText().toString();
         String laboratorio = etLabMed.getText().toString();
         String fecha = etVencMed.getText().toString();
+        String cantMed = etMedInic.getText().toString();
+        String cantLim = etAlarmaMed.getText().toString();
 
 
         boolean n = nombreValido(nombre, tilNombreMed);
         boolean l = nombreValido(laboratorio, tilLabMed);
         boolean f = fechaValida(fecha);
+        boolean cp = cantPastillasValidas(cantMed,tilMedInic);
+        boolean cl = cantPastillasValidas(cantLim,tilAlertaMed);
 
-        if(n && l && f) {
-            Toast.makeText(this,"Agrega registro", Toast.LENGTH_LONG).show();
+        if(n && l && f && cp && cl) {
+            ///Si esta tod0 OK , armo una cadena para pasar los datos a la activity que tiene la lista de registros
+            cadenaAEnviar = nombre+"#"+laboratorio+"#"+fecha+"#"+cantMed+"#"+cantLim;
+
+            return true;
         }
+
+        return false;
     }
 
     private boolean nombreValido(String nombre, TextInputLayout campo) {
@@ -157,5 +180,23 @@ public class FormActivity extends AppCompatActivity {
         tilVencMed.setError(null);
         return true;
     }
+
+    private boolean cantPastillasValidas(String cantPastillas, TextInputLayout campo){
+
+        if(Integer.parseInt(cantPastillas) <= 0){
+            campo.setError("Ingrese una cantidad valida");
+            return false;
+        }else{
+            campo.setError(null);
+        }
+
+        return true;
+    }
+
+    private void mostrarMensaje(String mensaje){
+        Toast.makeText(this,mensaje,Toast.LENGTH_SHORT).show();
+    }
+
+
 
 }
