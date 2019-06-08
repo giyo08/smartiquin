@@ -1,9 +1,6 @@
 package com.example.smartiquin;
-
-
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.os.Parcelable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -13,10 +10,8 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class FormActivity extends AppCompatActivity {
@@ -33,18 +28,22 @@ public class FormActivity extends AppCompatActivity {
     private TextInputEditText etVencMed;
     private TextInputEditText etMedInic;
     private TextInputEditText etAlarmaMed;
-
-    private RadioButton rbtnDia;
-    private RadioButton rbtnNoche;
-
+    private RadioGroup rgBotones;
     private Button btnAceptar;
     private Button btnCancelar;
 
+    // Variables para los inputs y control de info ingresada
+    private int pos = 0;
+    private String nombreMed;
+    private String labMed;
+    private String vencMed;
+    private String inicMed;
+    private String alarmaMed;
+    private String selBoton;
+    private int rbuttonId;
     private String cadenaAEnviar;
 
     private Intent intent;
-
-    public int pos = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +65,7 @@ public class FormActivity extends AppCompatActivity {
         etMedInic = findViewById(R.id.editTextCantMed);
         etAlarmaMed = findViewById(R.id.editTextAlertaMed);
 
-        rbtnDia = findViewById(R.id.radioButtonDia);
-        rbtnNoche = findViewById(R.id.radioButtonNoche);
+        rgBotones = findViewById(R.id.radioGroupBotones);
 
         btnAceptar = findViewById(R.id.buttonAceptar);
         btnCancelar = findViewById(R.id.buttonCancelar);
@@ -75,8 +73,23 @@ public class FormActivity extends AppCompatActivity {
         etNombreMed.addTextChangedListener(camposCompletosTextWatcher);
         etLabMed.addTextChangedListener(camposCompletosTextWatcher);
         etVencMed.addTextChangedListener(camposCompletosTextWatcher);
+        etMedInic.addTextChangedListener(camposCompletosTextWatcher);
+        etAlarmaMed.addTextChangedListener(camposCompletosTextWatcher);
 
+        //rbuttonId.radioButtonGroup.getCheckedRadioButtonId();
         intent = new Intent(this, RegisterActivity.class);
+
+        // Seteo el listener para los radio buttons
+        rgBotones.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+                if (checkedId == R.id.radioButtonDia){
+                    // selBoton =
+                }else if (checkedId == R.id.radioButtonNoche){
+                    // hacer algo
+                }
+            }
+        });
 
         // Seteo el listener para el botón Aceptar
         btnAceptar.setOnClickListener(new View.OnClickListener() {
@@ -110,9 +123,11 @@ public class FormActivity extends AppCompatActivity {
 
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            String nombreMed = etNombreMed.getText().toString();
-            String labMed = etLabMed.getText().toString();
-            String vencMed = etVencMed.getText().toString();
+            nombreMed = etNombreMed.getText().toString();
+            labMed = etLabMed.getText().toString();
+            vencMed = etVencMed.getText().toString();
+            inicMed = etMedInic.getText().toString();
+            alarmaMed = etAlarmaMed.getText().toString();
 
             if(etVencMed.getText().length() == 2 && pos!=3) {
                 etVencMed.setText(etVencMed.getText().toString()+"/");
@@ -123,7 +138,8 @@ public class FormActivity extends AppCompatActivity {
                 etVencMed.clearFocus();
             }
 
-            btnAceptar.setEnabled(!nombreMed.isEmpty() && !labMed.isEmpty() && !vencMed.isEmpty());
+            btnAceptar.setEnabled(!nombreMed.isEmpty() && !labMed.isEmpty() && !vencMed.isEmpty()
+                    && !inicMed.isEmpty() && !alarmaMed.isEmpty());
         }
 
         @Override
@@ -133,22 +149,17 @@ public class FormActivity extends AppCompatActivity {
     };
 
     private boolean validarDatos() {
-        String nombre = etNombreMed.getText().toString();
-        String laboratorio = etLabMed.getText().toString();
-        String fecha = etVencMed.getText().toString();
-        String cantMed = etMedInic.getText().toString();
-        String cantLim = etAlarmaMed.getText().toString();
+        //selBoton = rgBotones
 
-
-        boolean n = nombreValido(nombre, tilNombreMed);
-        boolean l = nombreValido(laboratorio, tilLabMed);
-        boolean f = fechaValida(fecha);
-        boolean cp = cantPastillasValidas(cantMed,tilMedInic);
-        boolean cl = cantPastillasValidas(cantLim,tilAlertaMed);
+        boolean n = nombreValido(nombreMed, tilNombreMed);
+        boolean l = nombreValido(labMed, tilLabMed);
+        boolean f = fechaValida(vencMed, tilVencMed);
+        boolean cp = cantPastillasValidas(inicMed,tilMedInic);
+        boolean cl = cantPastillasValidas(alarmaMed,tilAlertaMed);
 
         if(n && l && f && cp && cl) {
             ///Si esta tod0 OK , armo una cadena para pasar los datos a la activity que tiene la lista de registros
-            cadenaAEnviar = nombre+"#"+laboratorio+"#"+fecha+"#"+cantMed+"#"+cantLim;
+            cadenaAEnviar = nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed;
 
             return true;
         }
@@ -168,16 +179,28 @@ public class FormActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean fechaValida(String fecha) {
-        try {
-            SimpleDateFormat formatoFecha = new SimpleDateFormat("MM/yyyy");
-            formatoFecha.setLenient(false);
-            formatoFecha.parse(fecha);
-        } catch (ParseException e) {
-            tilVencMed.setError("Formato fecha mm/yyyy");
+    private boolean fechaValida(String fecha, TextInputLayout campo) {
+        String [] partes = fecha.split("/");
+        String mes = partes[0];
+        String anio = partes[1];
+
+        Pattern patronMes = Pattern.compile("^(0[1-9]|1[0-2])");
+        Pattern patronAnio = Pattern.compile("^(2019|20[2-3][0-9])");
+
+        if(!patronMes.matcher(mes).matches()) {
+            campo.setError("Mes debe ser entre 1 y 12");
             return false;
+        } else {
+            campo.setError(null);
         }
-        tilVencMed.setError(null);
+
+        if(!patronAnio.matcher(anio).matches()) {
+            campo.setError("Año debe ser entre 2019 y 2039");
+            return false;
+        } else {
+            campo.setError(null);
+        }
+
         return true;
     }
 
