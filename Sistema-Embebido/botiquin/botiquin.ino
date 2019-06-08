@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
 
-SoftwareSerial BTserial(10,11); // RX | TX
+SoftwareSerial BT(10,11); // RX | TX
 
 byte switch01 = 3; //en principio son pulsadores
 byte switch02 = 4;
@@ -39,7 +39,7 @@ byte LUMINOSIDAD_MAX = 70;
 //relacionadas al tiempo y las esperas
 unsigned long tiempo = 0;
 unsigned long tiempo_anterior = 0;
-unsigned long intervalo = 200;
+unsigned long intervalo = 2000;
 
   
 
@@ -81,10 +81,11 @@ void obtener_parametros_externos() {
 
 void setup() {
   // put your setup code here, to run once:
-
-  pinMode(buzzer01, OUTPUT);  
+  BT.begin(9600);
   Serial.begin(9600);
   dht.begin();
+  
+  pinMode(buzzer01, OUTPUT);  
 
   obtener_parametros_externos();
 }
@@ -211,32 +212,52 @@ void loop() {
   tiempo = millis();
   if ( intervalo_cumplido() ) {
     //chequear_humedad();
-    chequear_luminosidad();
-    chequear_extraccion();
+    //chequear_luminosidad();
+    //chequear_extraccion();
     tiempo_anterior = tiempo;
-    
-    //if(BTserial.available())
-    if(Serial.available())
-    { 
+
+    // Probando envio de mensajes entre arduino y app generica
+    if(BT.available()) { 
       leer_bluetooth();
     }
+
+    if(Serial.available()) {
+      escribir_bluetooth();
+    }
+    
   }
 }
 
 void leer_bluetooth(){
-  //comando_bt = BTserial.read();
-  comando_bt = Serial.read();
+  // Lee comando enviado desde terminal bluetooth
+  comando_bt = BT.read();
+  
+  analizar_comando(comando_bt);
+}
+
+void escribir_bluetooth() {
+  // Lee comando enviado desde terminal serial
+  comando_bt = Serial.read(); 
+
   analizar_comando(comando_bt);
 }
 
 void analizar_comando(char comando){
   switch(comando){
     case 'a': 
-      abrir_botiquin(); 
+      //abrir_botiquin(); 
+      // Temporal para probar la comunicacion BT a Arduino
+      Serial.println("Abre botiquin");
       break; 
     case 'e': //Accion para encontrar al botiquin, si, se puede perder...
-      encender_buzzer(2000, 600);     
+      //encender_buzzer(2000, 600);  
+      // Temporal para probar la comunicacion BT a Arduino
+      Serial.println("Apagar buzzer");   
       break; 
+    case 's':
+      // Temporal para probar la comunicacion Arduino a BT
+      BT.write("Mandamos estado de la puerta/sensores \n");
+      break;
   }  
 }
 
