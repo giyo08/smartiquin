@@ -2,9 +2,11 @@ package com.example.smartiquin;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -16,18 +18,18 @@ public class RegisterActivity extends AppCompatActivity {
 
     // Botones y list view
     private Button btnAgregar;
-    private Button btnVaciarBD;
+    private Button btnEliminar;
     private ListView lviewMeds;
 
     // Arrays para almacenar los medicamentos que se ingresen
     private ArrayAdapter<String> adaptador;
     private ArrayList<String> lista;
 
-   /* //Lista que contendra los tres medicamentos
-    private List<Medicamento> medicamentosList = new ArrayList<>();*/
-
    //base de datos
     private MedicamentosDBHelper db;
+
+    private String idSeleccionado;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,18 +44,25 @@ public class RegisterActivity extends AppCompatActivity {
         // Asigno las variables con sus elementos en la vista
         lviewMeds = findViewById(R.id.listviewMeds);
         btnAgregar = findViewById(R.id.buttonAdd);
-        btnVaciarBD = findViewById(R.id.buttonVaciarBD);
+        btnEliminar = findViewById(R.id.buttonEliminar);
+        btnEliminar.setEnabled(false);
 
         ///Cargo la lista desde la db
         cargarListMedicamentos();
 
         // Listener para el botón agregar
         btnAgregar.setOnClickListener(btnAgregarListener);
+        btnEliminar.setOnClickListener(btnEliminarListener);
 
-        btnVaciarBD.setOnClickListener(new View.OnClickListener() {
+        //Listener para la seleccion de items de la lista
+        lviewMeds.setOnItemClickListener(lviewMedsItemListener);
+
+        //ESTO NO VA
+        Button button = findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                db.eliminarAll();
+                db.limpiarBD();
                 cargarListMedicamentos();
             }
         });
@@ -81,6 +90,31 @@ public class RegisterActivity extends AppCompatActivity {
         db.close();
     }
 
+    AdapterView.OnItemClickListener lviewMedsItemListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            String[] datos = db.getMedicamento(position+1);
+
+            String mensaje = "Nro switch: "+datos[0]+'\n'
+                    +"Nombre: "+datos[1]+'\n'
+                    +"Laboratorio: "+datos[2]+'\n'
+                    +"Fecha de Vencimiento: "+datos[3]+'\n'
+                    +"Cantidad de Medicamentos: "+datos[4]+'\n';
+
+            btnEliminar.setText("Eliminar "+datos[1]);
+            idSeleccionado = position+1+"";
+            btnEliminar.setEnabled(true);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
+            builder.setTitle("Información");
+            builder.setMessage(mensaje);
+            builder.create().show();
+
+        }
+    };
+
+    ///Listeners para botones
     View.OnClickListener btnAgregarListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -90,6 +124,19 @@ public class RegisterActivity extends AppCompatActivity {
                 finish();
             }else
                 mostrarMensaje("Ya tiene registrado 3 medicamentos");
+        }
+    };
+
+    View.OnClickListener btnEliminarListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            db.deleteMedicamento(idSeleccionado);
+            mostrarMensaje("Eliminado correctamente");
+            cargarListMedicamentos();
+
+            idSeleccionado=null;
+            btnEliminar.setEnabled(false);
+
         }
     };
 

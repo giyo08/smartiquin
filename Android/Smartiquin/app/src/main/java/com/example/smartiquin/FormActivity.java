@@ -220,6 +220,10 @@ public class FormActivity extends AppCompatActivity {
         Toast.makeText(this,mensaje,Toast.LENGTH_SHORT).show();
     }
 
+    public void algo(){
+        
+
+    }
 
 
 }

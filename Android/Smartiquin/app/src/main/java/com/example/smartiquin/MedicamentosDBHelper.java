@@ -19,13 +19,12 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE " + MedicamentosBD.MedicamentosEntry.TABLE_NAME + " ("
-                    + MedicamentosBD.MedicamentosEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + MedicamentosBD.MedicamentosEntry.ID + " INTEGER NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.NOMBRE + " TEXT NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.LABORATORIO + " TEXT NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.FECHA + " TEXT NOT NULL,"
-                    + MedicamentosBD.MedicamentosEntry.CANTMED + " TEXT NOT NULL,"
-                    + MedicamentosBD.MedicamentosEntry.CANTLIM + " TEXT NOT NULL,"
+                    + MedicamentosBD.MedicamentosEntry.CANTMED + " INTEGER NOT NULL,"
+                    + MedicamentosBD.MedicamentosEntry.CANTLIM + " INTEGER NOT NULL,"
                     + "UNIQUE (" + MedicamentosBD.MedicamentosEntry.ID + "))");
     }
 
@@ -45,30 +44,47 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
     }
 
     //Delete por id
-    public int deleteMedicamento(String lawyerId) {
+    public int deleteMedicamento(String medicamentoId) {
         return getWritableDatabase().delete(
                 MedicamentosBD.MedicamentosEntry.TABLE_NAME,
                 MedicamentosBD.MedicamentosEntry.ID + " LIKE ?",
-                new String[]{lawyerId});
+                new String[]{medicamentoId});
     }
 
-    //Delete all
-    public void eliminarAll(){
+    public void limpiarBD(){
         SQLiteDatabase database = this.getWritableDatabase();
         database.execSQL("delete from "+ MedicamentosBD.MedicamentosEntry.TABLE_NAME);
         database.close();
     }
 
 
+    public String[] getMedicamento(int id){
+
+        String[] datos = new String[5];
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME +" WHERE "+ MedicamentosBD.MedicamentosEntry.ID +"= "+id;
+        Cursor registros = sqLiteDatabase.rawQuery(query,null);
+
+        if(registros.moveToFirst()){
+            for(int i = 1 ; i<6;i++){
+                datos[i-1]= registros.getString(i);
+            }
+        }else{
+
+            datos[0]= "No se encontro a ";
+        }
+        sqLiteDatabase.close();
+        return datos;
+
+    }
+
 
     public ArrayList<String> cargarLista(){
 
         ArrayList<String> lista = new ArrayList<>();
-
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-
         String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
-
         Cursor registros = sqLiteDatabase.rawQuery(query,null);
 
         if(registros.moveToFirst()){
@@ -77,8 +93,8 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
             }while(registros.moveToNext());
         }
 
+        registros.close();
+
         return lista;
-
     }
-
 }
