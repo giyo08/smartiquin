@@ -4,7 +4,9 @@
     <string name="textViewBotiquin">Botiquin</string>
     <string name="btnMeds">Registro Medicamentos</string>
     <string name="btnAgregar">Agregar</string>
-    <string name="btnEliminar">Eliminar</string>
+    <string name="btnVaciarBD">Vaciar BD</string>
+    <string name="textViewMedicamentos">Medicamentos</string>
+    <string name="textViewDetalles">Informacion</string>
     <string name="tilNombreMed">Nombre</string>
     <string name="tilLabMed">Laboratorio</string>
     <string name="tilVencMed">Fecha de Vencimiento</string>
@@ -14,4 +16,6 @@
     <string name="rbtnNoche">Noche</string>
     <string name="btnAceptar">Aceptar</string>
     <string name="btnCancelar">Cancelar</string>
+    <string name="btnEliminar">Eliminar</string>
+    <string name="btnSumarMed">Agregar Pastillas</string>
 </resources>
