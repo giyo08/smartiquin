@@ -16,4 +16,12 @@
     <string name="btnCancelar">Cancelar</string>
     <string name="btnAgregarPastillas">Ingresar Pastillas</string>
     <string name="btnEliminar">Eliminar Medicamento</string>
+    <string name="textViewSwitch">Posicion</string>
+    <string name="textViewRegistro">Registro de Medicamento</string>
+
+    <string-array name="switch_array">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
 </resources>

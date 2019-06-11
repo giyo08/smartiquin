@@ -65,14 +65,14 @@
 
     <Button
         android:id="@+id/buttonEliminar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="128dp"
+        android:layout_height="51dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="160dp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="68dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.987"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

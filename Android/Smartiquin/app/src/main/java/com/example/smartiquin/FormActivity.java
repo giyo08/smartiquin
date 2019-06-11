@@ -8,10 +8,16 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class FormActivity extends AppCompatActivity {
@@ -23,6 +29,8 @@ public class FormActivity extends AppCompatActivity {
     private TextInputLayout tilMedInic;
     private TextInputLayout tilAlertaMed;
 
+    private TextView tvPosicion;
+
     private TextInputEditText etNombreMed;
     private TextInputEditText etLabMed;
     private TextInputEditText etVencMed;
@@ -31,9 +39,12 @@ public class FormActivity extends AppCompatActivity {
     private RadioGroup rgBotones;
     private Button btnAceptar;
     private Button btnCancelar;
+    private Spinner spinner;
 
     // Variables para los inputs y control de info ingresada
     private int pos = 0;
+
+    private int posSwitch;
     private String nombreMed;
     private String labMed;
     private String vencMed;
@@ -67,6 +78,15 @@ public class FormActivity extends AppCompatActivity {
 
         rgBotones = findViewById(R.id.radioGroupBotones);
 
+        tvPosicion = findViewById(R.id.textViewPosicion);
+
+        spinner = findViewById(R.id.spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.switch_array, android.R.layout.simple_spinner_item);
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        spinner.setAdapter(adapter);
+
         btnAceptar = findViewById(R.id.buttonAceptar);
         btnCancelar = findViewById(R.id.buttonCancelar);
 
@@ -91,29 +111,48 @@ public class FormActivity extends AppCompatActivity {
             }
         });
 
-        // Seteo el listener para el botón Aceptar
-        btnAceptar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(validarDatos()){
-                    mostrarMensaje("Medicamento registrado");
-                    intent.putExtra("medicamento",cadenaAEnviar);
-                    startActivity(intent);
-                    finish();
-                }else
-                    mostrarMensaje("Campos invalidos");
-            }
-        });
+        // Seteo listeners
+        btnAceptar.setOnClickListener(btnAceptarListener);
+        btnCancelar.setOnClickListener(btnCancelarListener);
+        spinner.setOnItemSelectedListener(spinnerListener);
 
-        btnCancelar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent nuevaVentana = new Intent(FormActivity.this, RegisterActivity.class);
-                startActivity(nuevaVentana);
+    }///FIN DE ONCREATE
+
+
+    ///Implementacion de los listeners
+    View.OnClickListener btnAceptarListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if(validarDatos()){
+                mostrarMensaje("Medicamento registrado");
+                intent.putExtra("medicamento",cadenaAEnviar);
+                startActivity(intent);
                 finish();
-            }
-        });
-    }
+            }else
+                mostrarMensaje("Campos invalidos");
+        }
+    };
+
+    View.OnClickListener btnCancelarListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent nuevaVentana = new Intent(FormActivity.this, RegisterActivity.class);
+            startActivity(nuevaVentana);
+            finish();
+        }
+    };
+
+    AdapterView.OnItemSelectedListener spinnerListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            posSwitch = position+1;
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
 
     private TextWatcher camposCompletosTextWatcher = new TextWatcher() {
         @Override
@@ -151,20 +190,44 @@ public class FormActivity extends AppCompatActivity {
     private boolean validarDatos() {
         //selBoton = rgBotones
 
+        boolean ps = switchValido();
         boolean n = nombreValido(nombreMed, tilNombreMed);
         boolean l = nombreValido(labMed, tilLabMed);
         boolean f = fechaValida(vencMed, tilVencMed);
         boolean cp = cantPastillasValidas(inicMed,tilMedInic);
         boolean cl = cantPastillasValidas(alarmaMed,tilAlertaMed);
 
-        if(n && l && f && cp && cl) {
+        if(n && l && f && cp && cl && ps) {
             ///Si esta tod0 OK , armo una cadena para pasar los datos a la activity que tiene la lista de registros
-            cadenaAEnviar = nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed;
+            cadenaAEnviar = posSwitch+"#"+nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed;
 
             return true;
         }
 
         return false;
+    }
+
+    private boolean switchValido(){
+
+        MedicamentosDBHelper db = new MedicamentosDBHelper(getApplicationContext());
+
+        ArrayList<String> ids;
+
+        ids = db.getIDs();
+
+        db.close();
+
+        if(ids.size() == 0)
+            return true;
+        else
+            for(String s : ids)
+                if(Integer.parseInt(s) == posSwitch){
+                    tvPosicion.setError("Switch ya utilizado");
+                    return false;
+                }
+
+
+        return true;
     }
 
     private boolean nombreValido(String nombre, TextInputLayout campo) {
@@ -219,11 +282,5 @@ public class FormActivity extends AppCompatActivity {
     private void mostrarMensaje(String mensaje){
         Toast.makeText(this,mensaje,Toast.LENGTH_SHORT).show();
     }
-
-    public void algo(){
-        
-
-    }
-
 
 }

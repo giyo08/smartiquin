@@ -33,18 +33,4 @@ public class Medicamento {
         return values;
     }
 
-    public boolean comprobarLimite(){
-        return cantMed <= cantLim;
-    }
-
-    public void descontarMedicamento(){
-        if(cantMed > 0)
-            cantMed--;
-    }
-
-    public boolean comprobarFechaVencimiento(){
-        ///ImplementarEsto
-        return true;
-    }
-
 }

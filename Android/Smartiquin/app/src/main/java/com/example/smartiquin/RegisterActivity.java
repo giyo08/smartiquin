@@ -22,14 +22,12 @@ public class RegisterActivity extends AppCompatActivity {
     private ListView lviewMeds;
 
     // Arrays para almacenar los medicamentos que se ingresen
-    private ArrayAdapter<String> adaptador;
     private ArrayList<String> lista;
 
    //base de datos
     private MedicamentosDBHelper db;
 
     private String idSeleccionado;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +43,9 @@ public class RegisterActivity extends AppCompatActivity {
         lviewMeds = findViewById(R.id.listviewMeds);
         btnAgregar = findViewById(R.id.buttonAdd);
         btnEliminar = findViewById(R.id.buttonEliminar);
+
         btnEliminar.setEnabled(false);
+        btnEliminar.setVisibility(View.INVISIBLE);
 
         ///Cargo la lista desde la db
         cargarListMedicamentos();
@@ -73,7 +73,7 @@ public class RegisterActivity extends AppCompatActivity {
             String [] cadena = cadenaMedicamento.split("#");
 
             ///Agreggo el medicamento a la bd
-            db.saveMedicamento(new Medicamento(lista.size()+1,cadena[0],cadena[1],cadena[2],cadena[3],cadena[4]));
+            db.saveMedicamento(new Medicamento(Integer.parseInt(cadena[0]),cadena[1],cadena[2],cadena[3],cadena[4],cadena[5]));
 
             ///cargo la lista
             cargarListMedicamentos();
@@ -94,23 +94,27 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            String[] datos = db.getMedicamento(position+1);
+            if(lista.get(position) != "<Vacio>"){
 
-            String mensaje = "Nro switch: "+datos[0]+'\n'
-                    +"Nombre: "+datos[1]+'\n'
-                    +"Laboratorio: "+datos[2]+'\n'
-                    +"Fecha de Vencimiento: "+datos[3]+'\n'
-                    +"Cantidad de Medicamentos: "+datos[4]+'\n';
+                String[] datos = db.getMedicamento(position+1);
 
-            btnEliminar.setText("Eliminar "+datos[1]);
-            idSeleccionado = position+1+"";
-            btnEliminar.setEnabled(true);
+                String mensaje = "Nro switch: "+datos[0]+'\n'
+                        +"Nombre: "+datos[1]+'\n'
+                        +"Laboratorio: "+datos[2]+'\n'
+                        +"Fecha de Vencimiento: "+datos[3]+'\n'
+                        +"Cantidad de Medicamentos: "+datos[4]+'\n';
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
-            builder.setTitle("Información");
-            builder.setMessage(mensaje);
-            builder.create().show();
+                btnEliminar.setText("Eliminar "+datos[1]);
+                idSeleccionado = position+1+"";
 
+                btnEliminar.setEnabled(true);
+                btnEliminar.setVisibility(View.VISIBLE);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
+                builder.setTitle("Información");
+                builder.setMessage(mensaje);
+                builder.create().show();
+            }
         }
     };
 
@@ -118,7 +122,7 @@ public class RegisterActivity extends AppCompatActivity {
     View.OnClickListener btnAgregarListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if(lista.size() < 3){
+            if(comprobarCantRegistros() < 3){
                 Intent nuevaVentana = new Intent(RegisterActivity.this, FormActivity.class);
                 startActivity(nuevaVentana);
                 finish();
@@ -136,7 +140,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             idSeleccionado=null;
             btnEliminar.setEnabled(false);
-
+            btnEliminar.setVisibility(View.INVISIBLE);
         }
     };
 
@@ -147,9 +151,21 @@ public class RegisterActivity extends AppCompatActivity {
     public void cargarListMedicamentos(){
 
         lista = db.cargarLista();
-        adaptador = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,lista);
+        ArrayAdapter<String> adaptador = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,lista);
         lviewMeds.setAdapter(adaptador);
 
+    }
+
+    ///Ve cuantos medicamentos hay registrados
+    public int comprobarCantRegistros(){
+
+        int cantidad=0;
+
+        for(String s : lista)
+            if(s != "<Vacio>")
+                cantidad++;
+
+        return cantidad;
     }
 
 }

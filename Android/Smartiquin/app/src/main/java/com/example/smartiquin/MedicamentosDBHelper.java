@@ -76,7 +76,24 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
         }
         sqLiteDatabase.close();
         return datos;
+    }
 
+    public ArrayList<String> getIDs(){
+
+        ArrayList<String> datos = new ArrayList<>();
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
+        Cursor registros = sqLiteDatabase.rawQuery(query,null);
+
+        if(registros.moveToFirst()) {
+            do {
+                datos.add(registros.getString(1));
+            } while (registros.moveToNext());
+        }
+
+        sqLiteDatabase.close();
+        return datos;
     }
 
 
@@ -87,9 +104,17 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
         Cursor registros = sqLiteDatabase.rawQuery(query,null);
 
+        ///Lleno los 3 huecos de la lista con vacios
+        lista.add(0,"<Vacio>");
+        lista.add(1,"<Vacio>");
+        lista.add(2,"<Vacio>");
+
+
+        ///Agrego a cada posicion de la lista su correspondiente switch
         if(registros.moveToFirst()){
             do{
-                lista.add(registros.getString(2));
+                lista.remove(Integer.parseInt(registros.getString(1))-1);
+                lista.add(Integer.parseInt(registros.getString(1))-1,registros.getString(2));
             }while(registros.moveToNext());
         }
 
