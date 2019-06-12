@@ -13,6 +13,7 @@ public class MedicamentosBD {
         public static final String FECHA = "fecha";
         public static final String CANTMED = "cantMed";
         public static final String CANTLIM = "cantLim";
+        public static final String OPCIONHORA = "opcionHora";
     }
 
 }

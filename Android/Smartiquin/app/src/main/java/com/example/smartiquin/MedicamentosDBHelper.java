@@ -25,6 +25,7 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
                     + MedicamentosBD.MedicamentosEntry.FECHA + " TEXT NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.CANTMED + " INTEGER NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.CANTLIM + " INTEGER NOT NULL,"
+                    + MedicamentosBD.MedicamentosEntry.OPCIONHORA + "TEXT NOT NULL,"
                     + "UNIQUE (" + MedicamentosBD.MedicamentosEntry.ID + "))");
     }
 
@@ -60,14 +61,14 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
 
     public String[] getMedicamento(int id){
 
-        String[] datos = new String[5];
+        String[] datos = new String[6];
 
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME +" WHERE "+ MedicamentosBD.MedicamentosEntry.ID +"= "+id;
         Cursor registros = sqLiteDatabase.rawQuery(query,null);
 
         if(registros.moveToFirst()){
-            for(int i = 1 ; i<6;i++){
+            for(int i = 1 ; i<7;i++){
                 datos[i-1]= registros.getString(i);
             }
         }else{

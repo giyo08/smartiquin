@@ -73,7 +73,7 @@ public class RegisterActivity extends AppCompatActivity {
             String [] cadena = cadenaMedicamento.split("#");
 
             ///Agreggo el medicamento a la bd
-            db.saveMedicamento(new Medicamento(Integer.parseInt(cadena[0]),cadena[1],cadena[2],cadena[3],cadena[4],cadena[5]));
+            db.saveMedicamento(new Medicamento(Integer.parseInt(cadena[0]),cadena[1],cadena[2],cadena[3],cadena[4],cadena[5],cadena[6]));
 
             ///cargo la lista
             cargarListMedicamentos();
