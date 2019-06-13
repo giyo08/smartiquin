@@ -54,7 +54,7 @@ public class FormActivity extends AppCompatActivity {
     private String vencMed;
     private String inicMed;
     private String alarmaMed;
-    private String selBoton;
+    private String selBoton = "Dia";
     private String cadenaAEnviar;
 
     private Intent intent;
@@ -155,9 +155,9 @@ public class FormActivity extends AppCompatActivity {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
             if (checkedId == R.id.radioButtonDia){
-                selBoton = rbtnDia.toString();
+                selBoton = "Dia";
             } else if (checkedId == R.id.radioButtonNoche){
-                selBoton = rbtnNoche.toString();
+                selBoton = "Noche";
             }
         }
     };

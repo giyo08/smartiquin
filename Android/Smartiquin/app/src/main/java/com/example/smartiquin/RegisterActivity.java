@@ -64,6 +64,7 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v) {
                 db.limpiarBD();
                 cargarListMedicamentos();
+                btnEliminar.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -102,7 +103,8 @@ public class RegisterActivity extends AppCompatActivity {
                         +"Nombre: "+datos[1]+'\n'
                         +"Laboratorio: "+datos[2]+'\n'
                         +"Fecha de Vencimiento: "+datos[3]+'\n'
-                        +"Cantidad de Medicamentos: "+datos[4]+'\n';
+                        +"Cantidad de Medicamentos: "+datos[4]+'\n'
+                        +"Ciclo Horario: "+datos[6];
 
                 btnEliminar.setText("Eliminar "+datos[1]);
                 idSeleccionado = position+1+"";

@@ -25,7 +25,7 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
                     + MedicamentosBD.MedicamentosEntry.FECHA + " TEXT NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.CANTMED + " INTEGER NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.CANTLIM + " INTEGER NOT NULL,"
-                    + MedicamentosBD.MedicamentosEntry.OPCIONHORA + "TEXT NOT NULL,"
+                    + MedicamentosBD.MedicamentosEntry.OPCIONHORA + " TEXT NOT NULL,"
                     + "UNIQUE (" + MedicamentosBD.MedicamentosEntry.ID + "))");
     }
 
@@ -61,15 +61,15 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
 
     public String[] getMedicamento(int id){
 
-        String[] datos = new String[6];
+        String[] datos = new String[7];
 
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME +" WHERE "+ MedicamentosBD.MedicamentosEntry.ID +"= "+id;
         Cursor registros = sqLiteDatabase.rawQuery(query,null);
 
         if(registros.moveToFirst()){
-            for(int i = 1 ; i<7;i++){
-                datos[i-1]= registros.getString(i);
+            for(int i = 0 ; i<7;i++){
+                datos[i]= registros.getString(i);
             }
         }else{
 
@@ -89,7 +89,7 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
 
         if(registros.moveToFirst()) {
             do {
-                datos.add(registros.getString(1));
+                datos.add(registros.getString(0));
             } while (registros.moveToNext());
         }
 
@@ -114,8 +114,8 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
         ///Agrego a cada posicion de la lista su correspondiente switch
         if(registros.moveToFirst()){
             do{
-                lista.remove(Integer.parseInt(registros.getString(1))-1);
-                lista.add(Integer.parseInt(registros.getString(1))-1,registros.getString(2));
+                lista.remove(Integer.parseInt(registros.getString(0))-1);
+                lista.add(Integer.parseInt(registros.getString(0))-1,registros.getString(1));
             }while(registros.moveToNext());
         }
 
