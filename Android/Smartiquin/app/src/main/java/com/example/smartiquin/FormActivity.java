@@ -36,7 +36,11 @@ public class FormActivity extends AppCompatActivity {
     private TextInputEditText etVencMed;
     private TextInputEditText etMedInic;
     private TextInputEditText etAlarmaMed;
+
     private RadioGroup rgBotones;
+    private RadioButton rbtnDia;
+    private RadioButton rbtnNoche;
+
     private Button btnAceptar;
     private Button btnCancelar;
     private Spinner spinner;
@@ -50,8 +54,7 @@ public class FormActivity extends AppCompatActivity {
     private String vencMed;
     private String inicMed;
     private String alarmaMed;
-    private String selBoton;
-    private int rbuttonId;
+    private String selBoton = "Dia";
     private String cadenaAEnviar;
 
     private Intent intent;
@@ -77,6 +80,8 @@ public class FormActivity extends AppCompatActivity {
         etAlarmaMed = findViewById(R.id.editTextAlertaMed);
 
         rgBotones = findViewById(R.id.radioGroupBotones);
+        rbtnDia = findViewById(R.id.radioButtonDia);
+        rbtnNoche = findViewById(R.id.radioButtonNoche);
 
         tvPosicion = findViewById(R.id.textViewPosicion);
 
@@ -100,21 +105,13 @@ public class FormActivity extends AppCompatActivity {
         intent = new Intent(this, RegisterActivity.class);
 
         // Seteo el listener para los radio buttons
-        rgBotones.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
-                if (checkedId == R.id.radioButtonDia){
-                    // selBoton =
-                }else if (checkedId == R.id.radioButtonNoche){
-                    // hacer algo
-                }
-            }
-        });
+
 
         // Seteo listeners
         btnAceptar.setOnClickListener(btnAceptarListener);
         btnCancelar.setOnClickListener(btnCancelarListener);
         spinner.setOnItemSelectedListener(spinnerListener);
+        rgBotones.setOnCheckedChangeListener(rgroupListener);
 
     }///FIN DE ONCREATE
 
@@ -154,6 +151,17 @@ public class FormActivity extends AppCompatActivity {
         }
     };
 
+    RadioGroup.OnCheckedChangeListener rgroupListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+            if (checkedId == R.id.radioButtonDia){
+                selBoton = "Dia";
+            } else if (checkedId == R.id.radioButtonNoche){
+                selBoton = "Noche";
+            }
+        }
+    };
+
     private TextWatcher camposCompletosTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -188,8 +196,6 @@ public class FormActivity extends AppCompatActivity {
     };
 
     private boolean validarDatos() {
-        //selBoton = rgBotones
-
         boolean ps = switchValido();
         boolean n = nombreValido(nombreMed, tilNombreMed);
         boolean l = nombreValido(labMed, tilLabMed);
@@ -199,7 +205,7 @@ public class FormActivity extends AppCompatActivity {
 
         if(n && l && f && cp && cl && ps) {
             ///Si esta tod0 OK , armo una cadena para pasar los datos a la activity que tiene la lista de registros
-            cadenaAEnviar = posSwitch+"#"+nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed;
+            cadenaAEnviar = posSwitch+"#"+nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed+"#"+selBoton;
 
             return true;
         }
