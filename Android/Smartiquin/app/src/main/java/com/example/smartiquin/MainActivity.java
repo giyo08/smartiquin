@@ -93,6 +93,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent nuevaVentana = new Intent(MainActivity.this, RegisterActivity.class);
+
+                Notificacion n = new Notificacion();
+                n.generarNuevaNotificacion("HOLA","Usted es un vagal", getApplicationContext());
+
                 startActivity(nuevaVentana);
             }
         });
