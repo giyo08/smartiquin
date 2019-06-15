@@ -1,9 +1,8 @@
 package com.example.smartiquin;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.content.ContentValues;
 
-public class Medicamento implements Parcelable {
+public class Medicamento {
 
     private int id; //Posicion del Switch
     private String nombre;
@@ -11,8 +10,9 @@ public class Medicamento implements Parcelable {
     private String fecha;
     private int cantMed;
     private int cantLim;
+    private String opcionHora;
 
-    public Medicamento(int id, String nombre, String laboratorio, String fecha, String cantMed, String cantLim){
+    public Medicamento(int id, String nombre, String laboratorio, String fecha, String cantMed, String cantLim, String opcionHora){
 
         this.id = id;
         this.nombre = nombre;
@@ -20,46 +20,19 @@ public class Medicamento implements Parcelable {
         this.fecha = fecha;
         this.cantMed = Integer.parseInt(cantMed);
         this.cantLim = Integer.parseInt(cantLim);
-
+        this.opcionHora = opcionHora;
     }
 
-    public int getId() {
-        return id;
-    }
-    public String getNombre() {
-        return nombre;
-    }
-    public String getLaboratorio() {
-        return laboratorio;
-    }
-    public String getFecha() { return fecha; }
-    public int getCantMed() {
-        return cantMed;
-    }
-    public int getCantLim() {
-        return cantLim;
+    public ContentValues toContentValues() {
+        ContentValues values = new ContentValues();
+        values.put(MedicamentosBD.MedicamentosEntry.ID, id);
+        values.put(MedicamentosBD.MedicamentosEntry.NOMBRE, nombre);
+        values.put(MedicamentosBD.MedicamentosEntry.LABORATORIO, laboratorio);
+        values.put(MedicamentosBD.MedicamentosEntry.FECHA, fecha);
+        values.put(MedicamentosBD.MedicamentosEntry.CANTMED, cantMed);
+        values.put(MedicamentosBD.MedicamentosEntry.CANTLIM, cantLim);
+        values.put(MedicamentosBD.MedicamentosEntry.OPCIONHORA, opcionHora);
+        return values;
     }
 
-    public boolean comprobarLimite(){
-        return cantMed <= cantLim;
-    }
-
-    public void descontarMedicamento(){
-        if(cantMed > 0)
-            cantMed--;
-    }
-
-    public boolean comprobarFechaVencimiento(){
-        return true;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-
-    }
 }

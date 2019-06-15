@@ -1,7 +1,11 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
 
+<<<<<<< HEAD
 SoftwareSerial BTserial(10, 11); // RX | TX
+=======
+SoftwareSerial BT(10,11); // RX | TX
+>>>>>>> master
 
 /*
  * Sensores y actuadores asociados
@@ -58,7 +62,13 @@ const byte LUMINOSIDAD_MAX = 70;
 // Relacionadas al tiempo y las esperas
 unsigned long tiempo = 0;
 unsigned long tiempo_anterior = 0;
+<<<<<<< HEAD
 const unsigned long intervalo = 200;
+=======
+unsigned long intervalo = 2000;
+
+  
+>>>>>>> master
 
 // Relacionadas con el bluetooth
 char comando_bt;
@@ -104,8 +114,20 @@ void obtener_parametros_externos() {
   //conectarse y obtener valores
 }
 
+<<<<<<< HEAD
 boolean componenteApagado(byte componente){
   return digitalRead(componente) == 0;
+=======
+void setup() {
+  // put your setup code here, to run once:
+  BT.begin(9600);
+  Serial.begin(9600);
+  dht.begin();
+  
+  pinMode(buzzer01, OUTPUT);  
+
+  obtener_parametros_externos();
+>>>>>>> master
 }
 
 /*
@@ -317,6 +339,7 @@ void actuar_switch03() {
   }
 }
 
+<<<<<<< HEAD
 void playNote(char note, int duration) {
   char names[] = { 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'C' };
   int tones[] = { 1915, 1700, 1519, 1432, 1275, 1136, 1014, 956 };
@@ -326,10 +349,30 @@ void playNote(char note, int duration) {
     if (names[i] == note) {
       noTone(buzzer);
       tone(buzzer, tones[i], duration);
+=======
+void loop() {
+  // put your main code here, to run repeatedly:
+  tiempo = millis();
+  if ( intervalo_cumplido() ) {
+    //chequear_humedad();
+    //chequear_luminosidad();
+    //chequear_extraccion();
+    tiempo_anterior = tiempo;
+
+    // Probando envio de mensajes entre arduino y app generica
+    if(BT.available()) { 
+      leer_bluetooth();
+>>>>>>> master
     }
+
+    if(Serial.available()) {
+      escribir_bluetooth();
+    }
+    
   }
 }
 
+<<<<<<< HEAD
 /*
  * ******************** BLUETOOTH ZONE *******************
  */
@@ -349,6 +392,39 @@ void analizar_comando(char comando) {
       hacer_sonar_melodia("ccggaagc");
       break;
   }
+=======
+void leer_bluetooth(){
+  // Lee comando enviado desde terminal bluetooth
+  comando_bt = BT.read();
+  
+  analizar_comando(comando_bt);
+}
+
+void escribir_bluetooth() {
+  // Lee comando enviado desde terminal serial
+  comando_bt = Serial.read(); 
+
+  analizar_comando(comando_bt);
+}
+
+void analizar_comando(char comando){
+  switch(comando){
+    case 'a': 
+      //abrir_botiquin(); 
+      // Temporal para probar la comunicacion BT a Arduino
+      Serial.println("Abre botiquin");
+      break; 
+    case 'e': //Accion para encontrar al botiquin, si, se puede perder...
+      //encender_buzzer(2000, 600);  
+      // Temporal para probar la comunicacion BT a Arduino
+      Serial.println("Apagar buzzer");   
+      break; 
+    case 's':
+      // Temporal para probar la comunicacion Arduino a BT
+      BT.write("Mandamos estado de la puerta/sensores \n");
+      break;
+  }  
+>>>>>>> master
 }
 
 /*
