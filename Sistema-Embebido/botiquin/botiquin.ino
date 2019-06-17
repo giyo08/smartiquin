@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
 
-SoftwareSerial BTserial(10, 11); // RX | TX
+SoftwareSerial Bt1(10, 11); // RX | TX
 
 /*
  * Sensores y actuadores asociados
@@ -11,10 +11,10 @@ byte switch01 = 3;
 byte switch02 = 5;
 byte switch03 = 6;
 byte buzzer = 4;
-byte LED_Green = 8;
-byte LED_Red = 9;
+byte LED_Green = 7;
+byte LED_Red = 8;
 byte electroiman = 13;
-byte lampara = 11;
+byte lampara = 9;
 
 byte fotoresistor = A4;
 
@@ -95,15 +95,6 @@ bool intervalo_particular_cumplido(unsigned long actual, unsigned long previo, u
   return ((actual - previo) > espera);
 }
 
-/**
-   Esta funcion obtiene los valores minimos y maximos de cada
-   parametro a comprobar, se comunica con un microservicio
-   que le sirve los valores actualizados
-*/
-void obtener_parametros_externos() {
-  //conectarse y obtener valores
-}
-
 boolean componenteApagado(byte componente){
   return digitalRead(componente) == 0;
 }
@@ -127,9 +118,9 @@ void chequear_humedad() {
   }
 
   if ( h < HUMEDAD_MIN || h > HUMEDAD_MAX ) {
-    Serial.print("Humedad: ");
-    Serial.print(h);
-    Serial.print("%\t");
+    //Serial.print("Humedad: ");
+    //Serial.print(h);
+    //Serial.print("%\t");
   hacer_sonar_melodia("ccggaagc");
   }
 }
@@ -158,12 +149,13 @@ void prender_lampara(int porcentaje){
   if( porcentajeDeLuzAnterior < porcentaje)
     for(i = (porcentajeDeLuzAnterior*128/100)+1; i<= (porcentaje*128/100); i++){
       analogWrite(lampara, i);
-      delay(35);
+      delay(5);
     }
+  delay(20);
   if( porcentajeDeLuzAnterior > porcentaje)
     for(i = (porcentajeDeLuzAnterior*128/100)-1; i >= (porcentaje*128/100); i--){
       analogWrite(lampara, i);
-      delay(35);
+      delay(5);
     }
   porcentajeDeLuzAnterior = porcentaje;
 }
@@ -361,10 +353,11 @@ void setup() {
   pinMode(electroiman, OUTPUT);
   pinMode(lampara, OUTPUT);
   
-  Serial.begin(9600);
-  dht.begin();
+  delay (500) ;              // Espera antes de encender el modulo
   
-  obtener_parametros_externos();
+  Serial.begin(9600);
+  dht.begin();  
+  Bt1.begin(9600); 
   
 }
 
@@ -374,18 +367,29 @@ void loop() {
   
   if ( intervalo_cumplido() ) {
     //chequear_humedad();
-    chequear_luminosidad();
+    //chequear_luminosidad();
     chequear_extraccion();
 
-   analogWrite(lampara,128);
     
+analogWrite(lampara, 128);
+delay(400);
+analogWrite(lampara, 18);
+delay(400);
+    analogWrite(lampara, 50);
+delay(400);
     
     tiempo_anterior = tiempo; 
 
-    //if(BTserial.available())
+    char c = ' ';
+
+    if(Bt1.available()){ /// te dice si hay algo en el buffer
+      c = Bt1.read();
+      Serial.write(c);
+    }
     if (Serial.available())
     {
-      leer_bluetooth();
+      c = Serial.read();
+      Bt1.write(c);
     }
   }
 }
