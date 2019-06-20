@@ -16,10 +16,10 @@ Proyecto para la cátedra SOA de la UNLaM
 
   Sensores: *sensor de humedad, switch, sensor de luz.*
 
-  Actuadores: *luces led, buzzer, servo motor.*
+  Actuadores: *luces led, buzzer, electroiman.*
 
-  Otros: *placa Arduino, 2 potencias de 5v, potencia de 2.7V, cables, resistencias, relay, protoboard.*
+  Otros: *placa Arduino, potencias de 5v, potencia de 12v, cables, resistencias, relay, protoboard.*
 
 **Descripción de la implementación**
 
-El arduino y la aplicación móvil se comunicarán mediante bluetooth. Los medicamentos se colocarán arriba de los switchs, con los que se interpretará una ingesta o un faltante de medicamento cada vez que cambie de estado - dependiendo del tiempo que pase-. El servo de colocará de forma que trabe la puerta y, al mandarle una señal desde la aplicación por medio de bluetooth, el arduino moverá el servo destrabándola. En el botiquín habrá un sensor de luz y otro de humedad: el primero se colocará en el exterior, se utilizará para determinar el período del día que es (mañana, tarde o noche) y luego, notificar al usuario qué medicamento tomar (asociado al período); el segundo se colocará en el interior y se utilizará para efectivizar, cuando la humedad supere cierto valor apto, el envío de una notificación al usuario y la reproducción de un sonido de alerta con el buzzer. Los leds se dispondrán en el frente del botiquín, uno para informar si la puerta está cerrada o abierta, y los demás para ver fácilmente la disponibilidad de los medicamentos sin tener que abrir la aplicación ni el botiquín.
+El arduino y la aplicación móvil se comunicarán mediante bluetooth. Los medicamentos se colocarán arriba de los switchs, con los que se interpretará una ingesta o un faltante de medicamento cada vez que cambie de estado - dependiendo del tiempo que pase-. El servo de colocará de forma que trabe la puerta y, al mandarle una señal desde la aplicación por medio de bluetooth, el arduino moverá el servo destrabándola. En el botiquín habrá un sensor de luz y otro de humedad: el primero se colocará en el interior para determinar si dentro del botiquin se encuentran las luces encendidas.; el segundo se colocará en el interior y se utilizará para efectivizar, cuando la humedad supere cierto valor apto, el envío de una notificación al usuario y la reproducción de un sonido de alerta con el buzzer. Los leds se dispondrán en el frente del botiquín, uno para informar si la puerta está cerrada o abierta, y los demás para ver fácilmente la disponibilidad de los medicamentos sin tener que abrir la aplicación ni el botiquín.
