@@ -57,17 +57,6 @@ public class RegisterActivity extends AppCompatActivity {
         //Listener para la seleccion de items de la lista
         lviewMeds.setOnItemClickListener(lviewMedsItemListener);
 
-        //ESTO NO VA
-        Button button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                db.limpiarBD();
-                cargarListMedicamentos();
-                btnEliminar.setVisibility(View.INVISIBLE);
-            }
-        });
-
         ///Recibo datos de FormActivity
         try{
             String cadenaMedicamento = getIntent().getStringExtra("medicamento");
@@ -78,6 +67,43 @@ public class RegisterActivity extends AppCompatActivity {
 
             ///cargo la lista
             cargarListMedicamentos();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        ///Descuento de medicamentos
+        try{
+            Notificacion n = new Notificacion();
+
+            String aDescontar = getIntent().getStringExtra("1");
+
+            String [] medicamento = db.getMedicamento(Integer.parseInt(aDescontar));
+
+            Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+
+            m.descontarMed();
+
+            String resultado = m.descontarMed();
+
+            switch (resultado){
+                case "BAJO":{
+                    n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantLim()+ m.getNombre(), this);
+                    db.deleteMedicamento(aDescontar);
+                    db.saveMedicamento(m);
+                    break;
+                }
+                case "OK":{
+                    db.deleteMedicamento(aDescontar);
+                    db.saveMedicamento(m);
+                    break;
+                }
+                case "SIN":{
+                    n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), this);
+                    db.deleteMedicamento(aDescontar);
+                    break;
+                }
+            }
 
         }catch (Exception e){
             e.printStackTrace();
@@ -95,7 +121,7 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            if(lista.get(position) != "<Vacio>"){
+            if(lista.get(position) !=  "<Vacio>"){
 
                 String[] datos = db.getMedicamento(position+1);
 
@@ -164,7 +190,7 @@ public class RegisterActivity extends AppCompatActivity {
         int cantidad=0;
 
         for(String s : lista)
-            if(s != "<Vacio>")
+            if(s != "<Vacio>" )
                 cantidad++;
 
         return cantidad;

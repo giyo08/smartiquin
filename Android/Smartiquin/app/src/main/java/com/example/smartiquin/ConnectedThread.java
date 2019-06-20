@@ -5,15 +5,11 @@ import android.bluetooth.BluetoothSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Handler;
 
 public class ConnectedThread extends Thread{
 
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
-
-    private Handler bluetoothIn;
-    private Handler handler;
 
     public ConnectedThread (BluetoothSocket socket){
 

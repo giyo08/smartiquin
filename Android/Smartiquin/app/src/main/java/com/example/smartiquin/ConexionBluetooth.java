@@ -21,8 +21,6 @@ public class ConexionBluetooth {
 
     private Context context;
 
-    private Integer idThread=0;
-
     public ConnectedThread connectedThread;
 
     public ConexionBluetooth (Context context){
@@ -104,16 +102,6 @@ public class ConexionBluetooth {
         connectedThread.write(mensaje);
     }
 
-    public void terminarConexion(){
-
-        try {
-            bluetoothSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public void mostrarMensaje (Context context, String mensaje){
         Toast.makeText(context,mensaje,Toast.LENGTH_SHORT).show();
     }
@@ -173,10 +161,53 @@ public class ConexionBluetooth {
 
     public void evaluarDato(String dato){
 
-        if(dato.equals("A")){
-            mostrarMensaje(context,"Es una A");
-        }else{
-            mostrarMensaje(context,dato);
+        switch (dato){
+
+            case "1":{
+
+                Intent intent = new Intent(context, RegisterActivity.class);
+                intent.putExtra("1","1");
+                context.startActivity(intent);
+
+                break;
+            }
+            case "2":{
+
+                Intent intent = new Intent(context, RegisterActivity.class);
+                intent.putExtra("1","2");
+                context.startActivity(intent);
+
+                break;
+            }
+            case "3":{
+
+                Intent intent = new Intent(context, RegisterActivity.class);
+                intent.putExtra("1","3");
+                context.startActivity(intent);
+
+                break;
+            }
+            case "L":{
+
+                Intent intent = new Intent(context, MainActivity.class);
+                intent.putExtra("Encender","L");
+                context.startActivity(intent);
+
+                break;
+            }
+            case "H":{
+
+                Intent intent = new Intent(context, MainActivity.class);
+                intent.putExtra("Encender","H");
+                context.startActivity(intent);
+
+
+                break;
+            }
+            default:{
+                break;
+            }
+
         }
 
 
