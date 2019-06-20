@@ -18,7 +18,7 @@ Proyecto para la cátedra SOA de la UNLaM
 
   Actuadores: *luces led, buzzer, electroiman.*
 
-  Otros: *placa Arduino, potencias de 5v, potencia de 12v, cables, resistencias, relay, protoboard.*
+  Otros: *placa Arduino, potencia de 5v, potencia de 12v, cables, resistencias, relay, protoboard.*
 
 **Descripción de la implementación**
 
