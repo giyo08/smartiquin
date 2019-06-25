@@ -13,9 +13,9 @@ byte switch02 = 5;
 byte switch03 = 6;
 byte buzzer = 4;
 byte LED_Green = 7;
-byte LED_Red = 8;
+byte LED_Red = 12;
 byte lampara = 9;
-byte electroiman = 12;
+byte electroiman = 8;
 
 byte fotoresistor = A4;
 
@@ -101,10 +101,6 @@ bool intervalo_cumplido() {
 */
 bool intervalo_particular_cumplido(unsigned long actual, unsigned long previo, unsigned long espera) {
   return ((actual - previo) > espera);
-}
-
-boolean componenteApagado(byte componente){
-  return digitalRead(componente) == 0;
 }
 
 /*
@@ -193,18 +189,7 @@ void prender_lampara(int porcentaje){
  * 255 es el 100% del voltaje proporcionado.
  * 128 es la mitad, en este caso 2,5v
  * 
- */ 
-//void prender_lampara(){
-//  int i;
-//  for(i = 0; i<= 128; i++){
-//    analogWrite(lampara, i);
-//    delay(25);
-//  }
-//  for(i = 128; i>=0; i--){
-//    analogWrite(lampara, i);
-//    delay(25);
-//  }
-//}
+ */
 
 /*
  * ******************** DOOR CONTROL ZONE *******************
@@ -212,8 +197,7 @@ void prender_lampara(int porcentaje){
 
 void cerrar_botiquin(){
   /*Activar rele*/
-  if( componenteApagado )
-    digitalWrite(electroiman, HIGH);
+  digitalWrite(electroiman, HIGH);
   /*Encender led rojo*/
   puertaAbierta = false;
   cambiar_estado_puerta();
@@ -222,12 +206,10 @@ void cerrar_botiquin(){
 
 void abrir_botiquin() {
   /*Desactivar rele*/
-  if( !componenteApagado )
-    digitalWrite(electroiman, LOW);
+  digitalWrite(electroiman, LOW);
   /*Encender led verder*/
   puertaAbierta = true;
-  cambiar_estado_puerta();
-  
+  cambiar_estado_puerta();  
   hacer_sonar_melodia("defaafaa");
 }
 
