@@ -124,5 +124,46 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
         return lista;
     }
 
+    public String[] getNombres(){
+
+        String[] nombres = new String[3];
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        String query = "SELECT "+ MedicamentosBD.MedicamentosEntry.NOMBRE +" FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
+        Cursor registros = sqLiteDatabase.rawQuery(query,null);
+
+        int i=0;
+
+        while(registros.moveToNext()) {
+            nombres[i] = registros.getString(i);
+            i++;
+        }
+
+        sqLiteDatabase.close();
+        return nombres;
+
+    }
+
+
+    public int[] getHoras(){
+
+        int[] horas = new int[3];
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        String query = "SELECT "+ MedicamentosBD.MedicamentosEntry.OPCIONHORA +" FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
+        Cursor registros = sqLiteDatabase.rawQuery(query,null);
+
+        int i=0;
+
+        while(registros.moveToNext()) {
+            horas[i] = Integer.parseInt(registros.getString(i));
+            i++;
+        }
+
+        sqLiteDatabase.close();
+        return horas;
+
+    }
+
 
 }

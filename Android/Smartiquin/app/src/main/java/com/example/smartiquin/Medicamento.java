@@ -35,12 +35,15 @@ public class Medicamento {
         return values;
     }
 
-    public String descontarMed(){
+    public String descontarMed() {
 
-        if(cantMed-1 > 0){
+        if (cantMed > 0) {
             cantMed--;
 
-            if(cantMed <= cantLim)
+            if (cantMed == 0)
+                return "SIN";
+
+            if (cantMed <= cantLim)
                 return "BAJO";
 
             return "OK";
@@ -53,7 +56,7 @@ public class Medicamento {
         return nombre;
     }
 
-    public int getCantLim() {
-        return cantLim;
+    public int getCantMed() {
+        return cantMed;
     }
 }

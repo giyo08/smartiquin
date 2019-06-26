@@ -1,11 +1,17 @@
 package com.example.smartiquin;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +20,11 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String S_ABRIR = "Abrir";
     private static final String S_CERRAR = "Cerrar";
 
-    ///Sensores
+    ///Senso
     private SensorManager sm;
     private Sensor sensorShake;
     private Sensor sensorProx;
@@ -48,6 +59,14 @@ public class MainActivity extends AppCompatActivity {
     ///Bluetooth
     private ConexionBluetooth conexionBluetooth;
 
+    private MedicamentosDBHelper db;
+    private Notificacion n = new Notificacion();
+    private Date date;
+    private Calendar calendar;
+    private String[] nomMed;
+    private int[] horMed;
+    private int horaActual;
+    private int horaAnterior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        db = new MedicamentosDBHelper(getApplicationContext());
 
         ///bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         conexionBluetooth = new ConexionBluetooth(MainActivity.this);
@@ -72,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
         btnConectarArduino.setOnClickListener(btnConectarArduinoListener);
         btnMeds.setOnClickListener(btnMedsListener);
 
-        ///ACA TENGO QUE SETEAR EN QUE ESTADO ESTA EL BOTIQUIN DEPENDE DE LO QUE ME ENVIE EL ARDUINO
-        ///AHORA PARA PRUEBAS LO PONGO EN CERRADO
         estadoBotiquin = E_CERRADO;
 
         ///Set como esta el botiquin y habilito/deshabilito botones
@@ -91,21 +110,33 @@ public class MainActivity extends AppCompatActivity {
         sensorProx = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         sensorLuz = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
 
-        try{
-            String aviso = getIntent().getStringExtra("Encender");
+       /* ThreadHora hiloHora =new ThreadHora();
+        hiloHora.execute();*/
 
-            sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
+        date = new Date();
+        calendar = Calendar.getInstance();
+        calendar.setTime(date);
 
-            Notificacion n = new Notificacion();
+        horaActual = calendar.get(Calendar.HOUR_OF_DAY);
+        horaAnterior = horaActual-1;
 
-            if(aviso.equals("L"))
-                n.generarNuevaNotificacion("ATENCIÓN", "La luz del botiquin se encuentra encendida!!", this);
-            else
-                n.generarNuevaNotificacion("ATENCIÓN", "La humedad dentro del botiquin es alta!!", this);
+        /*nomMed = db.getNombres();
+        horMed = db.getHoras();*/
 
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sm.unregisterListener(luzSensorListener);
+        sm.unregisterListener(proximitySensorListener);
+
+        conexionBluetooth.terminarConexion();
     }
 
     View.OnClickListener btnMedsListener = new View.OnClickListener() {
@@ -133,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 conexionBluetooth.enviarMensaje("C");
                 botiquinCerrado();
                 sm.unregisterListener(luzSensorListener);
+
             } else {
                 ///Envio mensaje para que abra el botiquin y activo el sensor de luz.
                 conexionBluetooth.enviarMensaje("A");
@@ -183,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
             if ((tiempoAct - ultShake) > 1000) {
 
-                if ((Math.abs(event.values[0]) > 50 || Math.abs(event.values[1]) > 50 || Math.abs(event.values[2]) > 50)) {
+                if ((Math.abs(event.values[0]) > 30 || Math.abs(event.values[1]) > 30 || Math.abs(event.values[2]) > 30)) {
 
                     ultShake = tiempoAct;
 
@@ -192,11 +224,13 @@ public class MainActivity extends AppCompatActivity {
                         botiquinAbierto();
                         sm.registerListener(luzSensorListener,sensorLuz,SensorManager.SENSOR_DELAY_NORMAL);
                         v.vibrate(100);
+
                     } else {
                         conexionBluetooth.enviarMensaje("C");
                         botiquinCerrado();
                         sm.unregisterListener(luzSensorListener);
                         v.vibrate(100);
+
                     }
                 }
             }
@@ -208,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
     ///EVENTO PARA SENSOR PROXIMIDAD
     SensorEventListener proximitySensorListener = new SensorEventListener() {
         @Override
@@ -215,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
             if (sensorEvent.values[0] < sensorProx.getMaximumRange()) {
 
                 conexionBluetooth.enviarMensaje("L");
-                sm.unregisterListener(proximitySensorListener);
+                //sm.unregisterListener(proximitySensorListener);
             }
         }
 
@@ -224,15 +259,20 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
     ///EVENTO PARA SENSOR LUZ
     SensorEventListener luzSensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
 
-            if( event.values[0] > (sensorLuz.getMaximumRange() / 2))
-                conexionBluetooth.enviarMensaje("P");
-            else
+            if(event.values[0]<100){
                 conexionBluetooth.enviarMensaje("Z");
+            }else if(event.values[0]>210){
+                conexionBluetooth.enviarMensaje("P");
+            }else{
+                conexionBluetooth.enviarMensaje("T");
+            }
+
         }
 
         @Override
@@ -253,6 +293,359 @@ public class MainActivity extends AppCompatActivity {
         btnAbrirCerrar.setText(S_ABRIR);
         estadoBotiquin = E_CERRADO;
         tvEstBot.setText(S_CERRADO);
+
+    }
+    ////--------------------------------HORA DEL DIA----------------------------------------//
+
+    /*private class ThreadHora extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            try{
+
+                Notificacion n = new Notificacion();
+
+                Date date = new Date();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+
+                int horaActual = calendar.get(Calendar.HOUR_OF_DAY);
+                int horaAnterior = horaActual-1;
+
+                String[] nomMed;
+                int[] horMed;
+
+                nomMed = db.getNombres();
+                horMed = db.getHoras();
+
+
+                while(true){
+
+                    if(horaActual != horaAnterior)
+                        for(int i=0;i<3;i++)
+                            if(horMed[i] == horaActual)
+                                n.generarNuevaNotificacion("Alerta", "Es hora de tomar "+" "+nomMed[i], getApplicationContext());
+
+                    horaAnterior = horaActual;
+                    horaActual = calendar.get(Calendar.HOUR_OF_DAY);
+
+                    }
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }*/
+
+    ///------------------------------BLUETOOTH--------------------------------------//
+
+    private class ConexionBluetooth {
+
+        private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+        private BluetoothAdapter bluetoothAdapter;  //pu
+        private BluetoothSocket bluetoothSocket;
+
+        private Context context;
+
+        private ConnectedThread connectedThread;        //pu
+
+        private ConexionBluetooth (Context context){        //pu
+
+            this.context = context;
+
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            encenderBT();
+
+        }
+
+        private void encenderBT(){          //pu
+
+            if(!bluetoothAdapter.isEnabled()){
+                Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                ((Activity)context).startActivityForResult(intent,1);
+            }
+        }
+
+        private void conectar(){        //pu
+
+            try {
+                if(bluetoothAdapter.isEnabled()){
+
+                    String dirMAC = "00:18:E4:35:5A:64";
+
+                    BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(dirMAC);
+
+                    try{
+                        bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+
+                    }catch (Exception e){
+                        mostrarMensaje(context,"Error al crear el socket");
+                    }
+
+                    try{
+                        bluetoothSocket.connect();
+                    }catch (Exception e){
+                        bluetoothSocket.close();
+                        mostrarMensaje(context,"Error al conectar");
+                    }
+
+                    try {
+                        Method method = bluetoothDevice.getClass().getMethod("createBond", (Class[]) null);
+                        method.invoke(bluetoothDevice, (Object[]) null);
+                    } catch (Exception e) {
+                        mostrarMensaje(context,"Error al sincronizar");
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        connectedThread = new ConnectedThread(bluetoothSocket);
+                        connectedThread.start();
+
+                        mostrarMensaje(context,"Conectado al arduino");
+
+                    }catch (Exception e){
+                        mostrarMensaje(context,"No se pudo conectar");
+                        e.printStackTrace();
+                    }
+
+                    try{
+
+                        ///Abro el hilo secundario para escuchar lo que llega del arduino
+                        ThreadAsynctask hilo=new ThreadAsynctask();
+                        hilo.execute();
+
+
+                    }catch (Exception e){
+                        mostrarMensaje(context,"No se pudo iniciar la escucha de datos");
+                    }
+
+                }
+            }catch (Exception e){
+                mostrarMensaje(context,"No se pudo conectar");
+            }
+        }
+
+        private void terminarConexion(){        //pu
+
+            try {
+                bluetoothSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+        private void enviarMensaje(String mensaje){
+            connectedThread.write(mensaje);
+        }
+
+        private void mostrarMensaje (Context context, String mensaje){
+            Toast.makeText(context,mensaje,Toast.LENGTH_SHORT).show();
+        }
+
+
+        private class ThreadAsynctask extends AsyncTask<Void, String, Void> {
+
+            @Override
+            protected void onPreExecute() {
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                try
+                {
+                    byte[] buffer = new byte[1024];
+                    int bytes = 0;
+
+                    // Recibe los valores de arduino tod0 el tiempo, hasta que termine la aplicación
+                    while(true) {
+
+                        // Leo el inputstram del Bluetooth
+                        bytes += bluetoothSocket.getInputStream().read(buffer, bytes, buffer.length - bytes);
+
+                        // Convierto a string los datos recibidos
+                        String strReceived = new String(buffer, 0, bytes);
+
+                        // Publico el progreso
+                        publishProgress(strReceived);
+
+                        // Reinicio el buffer
+                        buffer = new byte[1024];
+                        bytes = 0;
+
+                        if(horaActual != horaAnterior)
+                            for(int i=0;i<3;i++)
+                                if(horMed[i] == horaActual)
+                                    n.generarNuevaNotificacion("Alerta", "Es hora de tomar "+" "+nomMed[i], getApplicationContext());
+
+                        horaAnterior = horaActual;
+                        horaActual = calendar.get(Calendar.HOUR_OF_DAY);
+
+                    }
+                }
+                catch (IOException e)
+                {
+                    mostrarMensaje(context,"No se pudo recibir datos");
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                mostrarMensaje(context, "Finalizando escucha de datos");
+            }
+
+            @Override
+            protected void onProgressUpdate(String... values) {
+
+                evaluarDato(values[0]);
+
+            }
+        }
+
+        private void evaluarDato(String dato){
+
+            switch (dato){
+
+                case "1":{
+
+                    Notificacion n = new Notificacion();
+
+                    String [] medicamento = db.getMedicamento(1);
+
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+
+                    String resultado = m.descontarMed();
+
+                    switch (resultado){
+                        case "BAJO":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                            db.deleteMedicamento("1");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "OK":{
+                            db.deleteMedicamento("1");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "SIN":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                            db.deleteMedicamento("1");
+                            break;
+                        }
+                    }
+
+                    break;
+
+                }
+                case "2":{
+
+                    Notificacion n = new Notificacion();
+
+                    String [] medicamento = db.getMedicamento(2);
+
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+
+                    String resultado = m.descontarMed();
+
+                    switch (resultado){
+                        case "BAJO":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                            db.deleteMedicamento("2");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "OK":{
+                            db.deleteMedicamento("2");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "SIN":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                            db.deleteMedicamento("2");
+                            break;
+                        }
+                    }
+
+                    break;
+
+                }
+                case "3":{
+
+                    Notificacion n = new Notificacion();
+
+                    String [] medicamento = db.getMedicamento(3);
+
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+
+                    String resultado = m.descontarMed();
+
+                    switch (resultado){
+                        case "BAJO":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                            db.deleteMedicamento("3");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "OK":{
+                            db.deleteMedicamento("3");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "SIN":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                            db.deleteMedicamento("3");
+                            break;
+                        }
+                    }
+
+                    break;
+
+                }
+                case "L":{
+
+                    sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
+
+                    Notificacion n = new Notificacion();
+
+                    n.generarNuevaNotificacion("ATENCIÓN", "Hay luz dentro del botiquin!!", context);
+
+                    break;
+                }
+                case "H":{
+
+                    sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
+
+                    Notificacion n = new Notificacion();
+
+                    n.generarNuevaNotificacion("ATENCIÓN", "La humedad dentro del botiquin es alta!!", context);
+
+                    break;
+                }
+                default:{
+
+                    break;
+                }
+
+            }
+
+
+
+        }
+
+
     }
 
 }

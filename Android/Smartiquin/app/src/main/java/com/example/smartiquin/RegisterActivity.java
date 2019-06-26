@@ -72,43 +72,6 @@ public class RegisterActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        ///Descuento de medicamentos
-        try{
-            Notificacion n = new Notificacion();
-
-            String aDescontar = getIntent().getStringExtra("1");
-
-            String [] medicamento = db.getMedicamento(Integer.parseInt(aDescontar));
-
-            Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
-
-            m.descontarMed();
-
-            String resultado = m.descontarMed();
-
-            switch (resultado){
-                case "BAJO":{
-                    n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantLim()+ m.getNombre(), this);
-                    db.deleteMedicamento(aDescontar);
-                    db.saveMedicamento(m);
-                    break;
-                }
-                case "OK":{
-                    db.deleteMedicamento(aDescontar);
-                    db.saveMedicamento(m);
-                    break;
-                }
-                case "SIN":{
-                    n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), this);
-                    db.deleteMedicamento(aDescontar);
-                    break;
-                }
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
     }
 
     @Override
@@ -130,7 +93,7 @@ public class RegisterActivity extends AppCompatActivity {
                         +"Laboratorio: "+datos[2]+'\n'
                         +"Fecha de Vencimiento: "+datos[3]+'\n'
                         +"Cantidad de Medicamentos: "+datos[4]+'\n'
-                        +"Ciclo Horario: "+datos[6];
+                        +"Hora Alarma: "+datos[6];
 
                 btnEliminar.setText("Eliminar "+datos[1]);
                 idSeleccionado = position+1+"";

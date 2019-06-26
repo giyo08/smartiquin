@@ -16,7 +16,6 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -28,6 +27,7 @@ public class FormActivity extends AppCompatActivity {
     private TextInputLayout tilVencMed;
     private TextInputLayout tilMedInic;
     private TextInputLayout tilAlertaMed;
+    private TextInputLayout tilHora;
 
     private TextView tvPosicion;
 
@@ -36,10 +36,11 @@ public class FormActivity extends AppCompatActivity {
     private TextInputEditText etVencMed;
     private TextInputEditText etMedInic;
     private TextInputEditText etAlarmaMed;
-
+    private TextInputEditText etHora;
+/*
     private RadioGroup rgBotones;
     private RadioButton rbtnDia;
-    private RadioButton rbtnNoche;
+    private RadioButton rbtnNoche;*/
 
     private Button btnAceptar;
     private Button btnCancelar;
@@ -56,6 +57,7 @@ public class FormActivity extends AppCompatActivity {
     private String alarmaMed;
     private String selBoton = "Dia";
     private String cadenaAEnviar;
+    private String hora;
 
     private Intent intent;
 
@@ -79,9 +81,12 @@ public class FormActivity extends AppCompatActivity {
         etMedInic = findViewById(R.id.editTextCantMed);
         etAlarmaMed = findViewById(R.id.editTextAlertaMed);
 
-        rgBotones = findViewById(R.id.radioGroupBotones);
+  /*      rgBotones = findViewById(R.id.radioGroupBotones);
         rbtnDia = findViewById(R.id.radioButtonDia);
         rbtnNoche = findViewById(R.id.radioButtonNoche);
+*/
+
+
 
         tvPosicion = findViewById(R.id.textViewPosicion);
 
@@ -100,6 +105,7 @@ public class FormActivity extends AppCompatActivity {
         etVencMed.addTextChangedListener(camposCompletosTextWatcher);
         etMedInic.addTextChangedListener(camposCompletosTextWatcher);
         etAlarmaMed.addTextChangedListener(camposCompletosTextWatcher);
+        /*etHora.addTextChangedListener(camposCompletosTextWatcher);*/
 
         //rbuttonId.radioButtonGroup.getCheckedRadioButtonId();
         intent = new Intent(this, RegisterActivity.class);
@@ -111,7 +117,11 @@ public class FormActivity extends AppCompatActivity {
         btnAceptar.setOnClickListener(btnAceptarListener);
         btnCancelar.setOnClickListener(btnCancelarListener);
         spinner.setOnItemSelectedListener(spinnerListener);
-        rgBotones.setOnCheckedChangeListener(rgroupListener);
+        /*rgBotones.setOnCheckedChangeListener(rgroupListener);*/
+
+        tilHora = findViewById(R.id.textInputHora);
+        etHora = findViewById(R.id.editTextHora);
+
 
     }///FIN DE ONCREATE
 
@@ -120,6 +130,9 @@ public class FormActivity extends AppCompatActivity {
     View.OnClickListener btnAceptarListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+
+            hora = etHora.getText().toString();
+
             if(validarDatos()){
                 mostrarMensaje("Medicamento registrado");
                 intent.putExtra("medicamento",cadenaAEnviar);
@@ -151,17 +164,6 @@ public class FormActivity extends AppCompatActivity {
         }
     };
 
-    RadioGroup.OnCheckedChangeListener rgroupListener = new RadioGroup.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
-            if (checkedId == R.id.radioButtonDia){
-                selBoton = "Dia";
-            } else if (checkedId == R.id.radioButtonNoche){
-                selBoton = "Noche";
-            }
-        }
-    };
-
     private TextWatcher camposCompletosTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -175,6 +177,7 @@ public class FormActivity extends AppCompatActivity {
             vencMed = etVencMed.getText().toString();
             inicMed = etMedInic.getText().toString();
             alarmaMed = etAlarmaMed.getText().toString();
+            /*hora = etHora.getText().toString();*/
 
             if(etVencMed.getText().length() == 2 && pos!=3) {
                 etVencMed.setText(etVencMed.getText().toString()+"/");
@@ -186,7 +189,7 @@ public class FormActivity extends AppCompatActivity {
             }
 
             btnAceptar.setEnabled(!nombreMed.isEmpty() && !labMed.isEmpty() && !vencMed.isEmpty()
-                    && !inicMed.isEmpty() && !alarmaMed.isEmpty());
+                    && !inicMed.isEmpty() && !alarmaMed.isEmpty() /*&& !hora.isEmpty()*/);
         }
 
         @Override
@@ -202,15 +205,28 @@ public class FormActivity extends AppCompatActivity {
         boolean f = fechaValida(vencMed, tilVencMed);
         boolean cp = cantPastillasValidas(inicMed,tilMedInic);
         boolean cl = cantPastillasValidas(alarmaMed,tilAlertaMed);
+        boolean h = horaValida(hora,tilMedInic);
 
-        if(n && l && f && cp && cl && ps) {
+        if(n && l && f && cp && cl && ps && h) {
             ///Si esta tod0 OK , armo una cadena para pasar los datos a la activity que tiene la lista de registros
-            cadenaAEnviar = posSwitch+"#"+nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed+"#"+selBoton;
+            cadenaAEnviar = posSwitch+"#"+nombreMed+"#"+labMed+"#"+vencMed+"#"+inicMed+"#"+alarmaMed+"#"+hora;
 
             return true;
         }
 
         return false;
+    }
+
+    private boolean horaValida(String hora, TextInputLayout campo) {
+
+        int h = Integer.parseInt(hora);
+
+        if(h<0 || h>23){
+            campo.setError("Ingrese una hora entre 0 y 23");
+            return false;
+        }
+
+        return true;
     }
 
     private boolean switchValido(){

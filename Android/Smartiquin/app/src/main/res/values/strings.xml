@@ -10,6 +10,7 @@
     <string name="tilVencMed">Fecha de Vencimiento</string>
     <string name="tilMedInic">Cantidad de Medicamentos</string>
     <string name="tilAlertaMed">Cantidad Minima</string>
+    <string name="tilHoraAlerta">Hora de alerta</string>
     <string name="rbtnDia">Dia</string>
     <string name="rbtnNoche">Noche</string>
     <string name="btnAceptar">Aceptar</string>
