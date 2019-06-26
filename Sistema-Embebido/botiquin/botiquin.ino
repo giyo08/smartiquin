@@ -16,6 +16,7 @@ byte LED_Green = 7;
 byte LED_Red = 12;
 byte lampara = 9;
 byte electroiman = 8;
+byte DHTpin = 2;
 
 byte fotoresistor = A4;
 
@@ -24,9 +25,7 @@ byte fotoresistor = A4;
  */
  
 #define DHTTYPE DHT11 // Declaramos el modelo de sensor a utilizar
-byte DHTPin = 2;
-
-DHT dht(DHTPin, DHTTYPE); // Inicializamos la variable de comunicación entre el sensor y Arduino
+DHT dht(DHTpin, DHTTYPE); // Inicializamos la variable de comunicación entre el sensor y Arduino
 
 
 /*
@@ -35,7 +34,6 @@ DHT dht(DHTPin, DHTTYPE); // Inicializamos la variable de comunicación entre el
 
 char digitoLeidoBT = ' ';
 float valorLuminosidadLeido;
-float humedadLeida;
 
 boolean puertaAbierta = true;
 
@@ -51,13 +49,17 @@ int porcentajeDeLuzAnterior = 0;
 
 // Relacionadas con el sensor de luz
 
-const byte LUMINOSIDAD_MAX = 300; // luminosidad máxima admitida dentro del botiquín
+const int LUMINOSIDAD_MAX = 800; // luminosidad máxima admitida dentro del botiquín
 boolean luzNoPermitidaRecientemente = true; // Variable de control de corte
 
 // Relacionadas con el sensor de temperatura y humedad
 
-byte HUMEDAD_MAX = 90; // humedad máxima permitida dentro del botiquín
+byte HUMEDAD_MAX = 80; // humedad máxima permitida dentro del botiquín
 boolean humedadNoPermitidaRecientemente = true; // Variable de control de corte
+float humedadLeida;
+
+unsigned long tiempo_anterior_lecturaHumedad = 0;
+const unsigned long intervaloLecturaHumedad = 5000;
 
 // Relacionadas al tiempo y las esperas
 
@@ -113,26 +115,22 @@ bool intervalo_particular_cumplido(unsigned long actual, unsigned long previo, u
 */
 void chequear_humedad() {
   humedadLeida = dht.readHumidity();
-  float t = dht.readTemperature();
-
-  if (isnan(humedadLeida) || isnan(t)) {
-    Serial.print("Falló al leer del sensor");
-    return;
-  }
-
-  if ( humedadLeida > HUMEDAD_MAX ) {
-    //Serial.print("Humedad: ");
-    //Serial.print(h);
-    //Serial.print("%\t");
-    if( humedadNoPermitidaRecientemente ){
-      Bt1.write('H');
-      humedadNoPermitidaRecientemente = false;
-      alarmaDeHumedad = true;
-    }    
-  } else{
+  
+  if (isnan(humedadLeida) ) {
+    Serial.println("Falló al leer del sensor DHT");
+  } else if ( humedadLeida > HUMEDAD_MAX ) {
+      
+      if( humedadNoPermitidaRecientemente ){
+        Bt1.write('H');
+        humedadNoPermitidaRecientemente = false;
+        alarmaDeHumedad = true;
+      }
+        
+  }else{
     alarmaDeHumedad = false;
     humedadNoPermitidaRecientemente = true;
   }
+ 
 }
 
 
@@ -145,10 +143,10 @@ void chequear_humedad() {
     cerrado. Si hay luz dentro, manda un mensaje, notificando al celular, y hace sonar la alarma.
 */
 void chequear_luminosidad() {
-//  Serial.print("\nLuminosidad: ");
-//  Serial.print(analogRead(fotoresistor));
-  
   valorLuminosidadLeido = analogRead(fotoresistor);
+
+   Serial.println(valorLuminosidadLeido);
+   Serial.println("");
   
   if ( !puertaAbierta && valorLuminosidadLeido > LUMINOSIDAD_MAX ){
     if( luzNoPermitidaRecientemente){
@@ -360,24 +358,30 @@ void setup() {
   pinMode(switch01, INPUT);
   pinMode(switch02, INPUT);
   pinMode(switch03, INPUT);
+  pinMode(DHTpin, INPUT);
   
-  digitalWrite(LED_Green, HIGH);
+  cerrar_botiquin();
   
   delay (500) ;              // Espera antes de encender el modulo
   
   Serial.begin(9600);
-  dht.begin();
+    
   Bt1.begin(9600); 
-
+  dht.begin();
  
 }
 
 void loop(){
   
   tiempo = millis();
-  
+
+  if(intervalo_particular_cumplido(tiempo, tiempo_anterior_lecturaHumedad, intervaloLecturaHumedad)){
+    chequear_humedad();
+    tiempo_anterior_lecturaHumedad = tiempo;    
+  }
+
   if ( intervalo_cumplido() ) {
-    //chequear_humedad();
+    
     chequear_luminosidad();
     chequear_extraccion();
     chequear_buzzer();
@@ -397,18 +401,27 @@ void loop(){
       }else if( digitoLeidoBT == 'C'){ //Cerrar la puerta
          cerrar_botiquin();
          
-      }else if( digitoLeidoBT >= 'P' && digitoLeidoBT<= 'Z'){ //Cantidad de Luz en el celular
-        /*
-         * Prender la lampaprender_lamparara, en el interior del botiquín, según el valor recibido de luz del celular
-         * P => 80-0% | Z => 90-100%
-         * 
-         * c - 80 = n => n*100 => porcentaje que busco! :D
-         * 
-         */
-         if(puertaAbierta){
-           int i = ((int) digitoLeidoBT - 80)*10; 
-           prender_lampara(i);
-         }
+      }else if( digitoLeidoBT == 'P'){ //Cerrar la puerta
+         prender_lampara(0);
+         
+      }else if( digitoLeidoBT == 'T'){ //Cerrar la puerta
+         prender_lampara(50);
+         
+      }else if( digitoLeidoBT == 'Z'){ //Cerrar la puerta
+         prender_lampara(100);
+//         
+//      }else if( digitoLeidoBT >= 'P' && digitoLeidoBT<= 'Z'){ //Cantidad de Luz en el celular
+//        /*
+//         * Prender la lampaprender_lamparara, en el interior del botiquín, según el valor recibido de luz del celular
+//         * P => 80-0% | Z => 90-100%
+//         * 
+//         * c - 80 = n => n*100 => porcentaje que busco! :D
+//         * 
+//         */
+//         if(puertaAbierta){
+//           int i = ((int) digitoLeidoBT - 80)*10; 
+//           prender_lampara(i);
+//         }
       }
         
       Serial.write(digitoLeidoBT);
