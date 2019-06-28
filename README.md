@@ -10,7 +10,7 @@ Proyecto para la cátedra SOA de la UNLaM
 
 **Descripción**
 
-*Smartiquín* es un botiquín de madera que te facilita la gestión de los medicamentos que estás tomando: te sugerirá qué medicamento ingerir dependiendo de si es mañana o noche -a modo de recordatorio-, te contará la cantidad de veces que ingeriste determinado medicamento a lo largo del día, te respaldará diciendote si falta algún medicamento y te informará si hay demasiada humedad dentro. Para todo esto, Smartiquín estará conectado a una aplicación móvil por donde podrás ver los datos anteriormente comentados. Además, el sistema cuenta con una apertura supervisada y segura: necesitarás la aplicación móvil para pedir que el botiquín se destrabe y puedas acceder a su contenido (necesitarás también la aplicación para hacer el bloqueo); de ésta forma, se restringe el acceso a los medicamentos al usuario de la aplicación, manteniéndolos fuera del alcance de los niños.
+*Smartiquín* es un botiquín de madera que te facilita la gestión de los medicamentos que estás tomando: ya que mantendra un registro de los medicamentos, descontando la cantidad que se ingiere, te respaldará diciendote si falta algún medicamento y te informará si hay demasiada humedad dentro. Para todo esto, Smartiquín estará conectado a una aplicación móvil por donde podrás ver los datos anteriormente comentados. Además, el sistema cuenta con una apertura supervisada y segura: necesitarás la aplicación móvil para pedir que el botiquín se destrabe y puedas acceder a su contenido (necesitarás también la aplicación para hacer el bloqueo); de ésta forma, se restringe el acceso a los medicamentos al usuario de la aplicación, manteniéndolos fuera del alcance de los niños.
 
 **Hardware a utilizar**
 
