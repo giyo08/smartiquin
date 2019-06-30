@@ -10,9 +10,8 @@ public class Medicamento {
     private String fecha;
     private int cantMed;
     private int cantLim;
-    private String opcionHora;
 
-    public Medicamento(int id, String nombre, String laboratorio, String fecha, String cantMed, String cantLim, String opcionHora){
+    public Medicamento(int id, String nombre, String laboratorio, String fecha, String cantMed, String cantLim){
 
         this.id = id;
         this.nombre = nombre;
@@ -20,7 +19,6 @@ public class Medicamento {
         this.fecha = fecha;
         this.cantMed = Integer.parseInt(cantMed);
         this.cantLim = Integer.parseInt(cantLim);
-        this.opcionHora = opcionHora;
     }
 
     public ContentValues toContentValues() {
@@ -31,7 +29,6 @@ public class Medicamento {
         values.put(MedicamentosBD.MedicamentosEntry.FECHA, fecha);
         values.put(MedicamentosBD.MedicamentosEntry.CANTMED, cantMed);
         values.put(MedicamentosBD.MedicamentosEntry.CANTLIM, cantLim);
-        values.put(MedicamentosBD.MedicamentosEntry.OPCIONHORA, opcionHora);
         return values;
     }
 

@@ -25,7 +25,6 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
                     + MedicamentosBD.MedicamentosEntry.FECHA + " TEXT NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.CANTMED + " INTEGER NOT NULL,"
                     + MedicamentosBD.MedicamentosEntry.CANTLIM + " INTEGER NOT NULL,"
-                    + MedicamentosBD.MedicamentosEntry.OPCIONHORA + " TEXT NOT NULL,"
                     + "UNIQUE (" + MedicamentosBD.MedicamentosEntry.ID + "))");
     }
 
@@ -52,23 +51,17 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
                 new String[]{medicamentoId});
     }
 
-    public void limpiarBD(){
-        SQLiteDatabase database = this.getWritableDatabase();
-        database.execSQL("delete from "+ MedicamentosBD.MedicamentosEntry.TABLE_NAME);
-        database.close();
-    }
-
 
     public String[] getMedicamento(int id){
 
-        String[] datos = new String[7];
+        String[] datos = new String[6];
 
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         String query = "SELECT * FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME +" WHERE "+ MedicamentosBD.MedicamentosEntry.ID +"= "+id;
         Cursor registros = sqLiteDatabase.rawQuery(query,null);
 
         if(registros.moveToFirst()){
-            for(int i = 0 ; i<7;i++){
+            for(int i = 0 ; i<6;i++){
                 datos[i]= registros.getString(i);
             }
         }else{
@@ -123,47 +116,5 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
 
         return lista;
     }
-
-    public String[] getNombres(){
-
-        String[] nombres = new String[3];
-
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        String query = "SELECT "+ MedicamentosBD.MedicamentosEntry.NOMBRE +" FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
-        Cursor registros = sqLiteDatabase.rawQuery(query,null);
-
-        int i=0;
-
-        while(registros.moveToNext()) {
-            nombres[i] = registros.getString(i);
-            i++;
-        }
-
-        sqLiteDatabase.close();
-        return nombres;
-
-    }
-
-
-    public int[] getHoras(){
-
-        int[] horas = new int[3];
-
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        String query = "SELECT "+ MedicamentosBD.MedicamentosEntry.OPCIONHORA +" FROM " + MedicamentosBD.MedicamentosEntry.TABLE_NAME;
-        Cursor registros = sqLiteDatabase.rawQuery(query,null);
-
-        int i=0;
-
-        while(registros.moveToNext()) {
-            horas[i] = Integer.parseInt(registros.getString(i));
-            i++;
-        }
-
-        sqLiteDatabase.close();
-        return horas;
-
-    }
-
 
 }

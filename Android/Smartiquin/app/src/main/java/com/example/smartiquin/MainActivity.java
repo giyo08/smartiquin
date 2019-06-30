@@ -22,8 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -60,13 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private ConexionBluetooth conexionBluetooth;
 
     private MedicamentosDBHelper db;
-    private Notificacion n = new Notificacion();
-    private Date date;
-    private Calendar calendar;
-    private String[] nomMed;
-    private int[] horMed;
-    private int horaActual;
-    private int horaAnterior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
         db = new MedicamentosDBHelper(getApplicationContext());
 
-        ///bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         conexionBluetooth = new ConexionBluetooth(MainActivity.this);
 
         ///Asigno a las variables su correspondiente componente
@@ -109,19 +99,6 @@ public class MainActivity extends AppCompatActivity {
         sensorShake = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorProx = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         sensorLuz = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
-
-       /* ThreadHora hiloHora =new ThreadHora();
-        hiloHora.execute();*/
-
-        date = new Date();
-        calendar = Calendar.getInstance();
-        calendar.setTime(date);
-
-        horaActual = calendar.get(Calendar.HOUR_OF_DAY);
-        horaAnterior = horaActual-1;
-
-        /*nomMed = db.getNombres();
-        horMed = db.getHoras();*/
 
     }
 
@@ -250,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
             if (sensorEvent.values[0] < sensorProx.getMaximumRange()) {
 
                 conexionBluetooth.enviarMensaje("L");
-                //sm.unregisterListener(proximitySensorListener);
             }
         }
 
@@ -295,69 +271,20 @@ public class MainActivity extends AppCompatActivity {
         tvEstBot.setText(S_CERRADO);
 
     }
-    ////--------------------------------HORA DEL DIA----------------------------------------//
-
-    /*private class ThreadHora extends AsyncTask<Void,Void,Void>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            try{
-
-                Notificacion n = new Notificacion();
-
-                Date date = new Date();
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(date);
-
-                int horaActual = calendar.get(Calendar.HOUR_OF_DAY);
-                int horaAnterior = horaActual-1;
-
-                String[] nomMed;
-                int[] horMed;
-
-                nomMed = db.getNombres();
-                horMed = db.getHoras();
-
-
-                while(true){
-
-                    if(horaActual != horaAnterior)
-                        for(int i=0;i<3;i++)
-                            if(horMed[i] == horaActual)
-                                n.generarNuevaNotificacion("Alerta", "Es hora de tomar "+" "+nomMed[i], getApplicationContext());
-
-                    horaAnterior = horaActual;
-                    horaActual = calendar.get(Calendar.HOUR_OF_DAY);
-
-                    }
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-    }*/
 
     ///------------------------------BLUETOOTH--------------------------------------//
 
     private class ConexionBluetooth {
 
         private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-        private BluetoothAdapter bluetoothAdapter;  //pu
+        private BluetoothAdapter bluetoothAdapter;
         private BluetoothSocket bluetoothSocket;
 
         private Context context;
 
-        private ConnectedThread connectedThread;        //pu
+        private ConnectedThread connectedThread;
 
-        private ConexionBluetooth (Context context){        //pu
+        private ConexionBluetooth (Context context){
 
             this.context = context;
 
@@ -366,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        private void encenderBT(){          //pu
+        private void encenderBT(){
 
             if(!bluetoothAdapter.isEnabled()){
                 Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -374,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        private void conectar(){        //pu
+        private void conectar(){
 
             try {
                 if(bluetoothAdapter.isEnabled()){
@@ -433,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        private void terminarConexion(){        //pu
+        private void terminarConexion(){
 
             try {
                 bluetoothSocket.close();
@@ -482,14 +409,6 @@ public class MainActivity extends AppCompatActivity {
                         buffer = new byte[1024];
                         bytes = 0;
 
-                        if(horaActual != horaAnterior)
-                            for(int i=0;i<3;i++)
-                                if(horMed[i] == horaActual)
-                                    n.generarNuevaNotificacion("Alerta", "Es hora de tomar "+" "+nomMed[i], getApplicationContext());
-
-                        horaAnterior = horaActual;
-                        horaActual = calendar.get(Calendar.HOUR_OF_DAY);
-
                     }
                 }
                 catch (IOException e)
@@ -524,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
 
                     String [] medicamento = db.getMedicamento(1);
 
-                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
 
                     String resultado = m.descontarMed();
 
@@ -556,7 +475,7 @@ public class MainActivity extends AppCompatActivity {
 
                     String [] medicamento = db.getMedicamento(2);
 
-                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
 
                     String resultado = m.descontarMed();
 
@@ -588,7 +507,7 @@ public class MainActivity extends AppCompatActivity {
 
                     String [] medicamento = db.getMedicamento(3);
 
-                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5],medicamento[6]);
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
 
                     String resultado = m.descontarMed();
 
@@ -644,8 +563,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
-
-
     }
 
 }
