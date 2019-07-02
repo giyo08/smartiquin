@@ -409,18 +409,13 @@ void loop(){
          
       }else if( digitoLeidoBT == 'Z'){ //Cerrar la puerta
          prender_lampara(100);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 700025218b9483761ab6d05f7c7a1169cc795cee
       }
-        
-      Serial.write(digitoLeidoBT);
     }
-
     
-    if (Serial.available()){
-      digitoLeidoBT = Serial.read();
-      Bt1.write(digitoLeidoBT);
-    }
-
     tiempo_anterior = tiempo; 
   }
 }
