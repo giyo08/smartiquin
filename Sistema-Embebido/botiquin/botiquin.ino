@@ -168,19 +168,6 @@ void chequear_luminosidad() {
  * Como no tiene resistencia, el 100% tendria que ser 128.
  */
 void prender_lampara(int porcentaje_recibido){
-//  int i;
-//  
-//  if( porcentajeDeLuzAnterior < porcentaje)
-//    for(i = (porcentajeDeLuzAnterior*128/100)+1; i<= (porcentaje*128/100); i++){
-//      analogWrite(lampara, i);
-//      delay(5);
-//    }
-//    
-//  if( porcentajeDeLuzAnterior > porcentaje)
-//    for(i = (porcentajeDeLuzAnterior*128/100)-1; i >= (porcentaje*128/100); i--){
-//      analogWrite(lampara, i);
-//      delay(5);
-//    }
   porcentajeDeLuzAnterior = porcentaje*128/100;
 }
 
