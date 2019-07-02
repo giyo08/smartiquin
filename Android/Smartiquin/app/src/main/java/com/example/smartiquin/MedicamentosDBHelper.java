@@ -66,7 +66,7 @@ public class MedicamentosDBHelper extends SQLiteOpenHelper {
             }
         }else{
 
-            datos[0]= "No se encontro a ";
+            datos[0]= "No se encontro";
         }
         sqLiteDatabase.close();
         return datos;
