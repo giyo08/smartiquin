@@ -11,7 +11,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -70,6 +74,8 @@ public class RegisterActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
+
+        verificarFechaMedicamentos();
 
     }
 
@@ -155,6 +161,38 @@ public class RegisterActivity extends AppCompatActivity {
                 cantidad++;
 
         return cantidad;
+    }
+
+    public void verificarFechaMedicamentos(){
+
+        for(int i=0;i<3;i++){
+
+            String[] datos = db.getMedicamento(i+1);
+
+            if(datos[0] != "No se encontro"){
+
+                String fecha = "01/"+datos[3];
+
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+                Date strDate = null;
+
+                try {
+                    strDate = sdf.parse(fecha);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                if (new Date().after(strDate)) {
+                    Notificacion n = new Notificacion();
+
+                    n.generarNuevaNotificacion("ATENCIÓN", datos[1]+" se encuentra vencido", getApplicationContext());
+                }
+
+            }
+
+        }
+
     }
 
 }
