@@ -390,7 +390,7 @@ void loop(){
       digitoLeidoBT = Bt1.read();
       
         /*
-         * LOGICA DE INTERPRETACIÓN
+         * Protocolo de mensajes
          */
          
       if(digitoLeidoBT == 'L'){ // Parar de sonar la alarma
@@ -409,19 +409,7 @@ void loop(){
          
       }else if( digitoLeidoBT == 'Z'){ //Cerrar la puerta
          prender_lampara(100);
-//         
-//      }else if( digitoLeidoBT >= 'P' && digitoLeidoBT<= 'Z'){ //Cantidad de Luz en el celular
-//        /*
-//         * Prender la lampaprender_lamparara, en el interior del botiquín, según el valor recibido de luz del celular
-//         * P => 80-0% | Z => 90-100%
-//         * 
-//         * c - 80 = n => n*100 => porcentaje que busco! :D
-//         * 
-//         */
-//         if(puertaAbierta){
-//           int i = ((int) digitoLeidoBT - 80)*10; 
-//           prender_lampara(i);
-//         }
+
       }
         
       Serial.write(digitoLeidoBT);
