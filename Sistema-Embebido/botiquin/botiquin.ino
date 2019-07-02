@@ -59,6 +59,7 @@ boolean humedadNoPermitidaRecientemente = true; // Variable de control de corte
 float humedadLeida;
 
 unsigned long tiempo_anterior_lecturaHumedad = 0;
+unsigned long tiempo_anterior_chequeo_luz = 0;
 const unsigned long intervaloLecturaHumedad = 5000;
 
 // Relacionadas al tiempo y las esperas
@@ -166,22 +167,39 @@ void chequear_luminosidad() {
  * con el porcentaje requerido de luz.
  * Como no tiene resistencia, el 100% tendria que ser 128.
  */
-void prender_lampara(int porcentaje){
-  int i;
-  
-  if( porcentajeDeLuzAnterior < porcentaje)
-    for(i = (porcentajeDeLuzAnterior*128/100)+1; i<= (porcentaje*128/100); i++){
-      analogWrite(lampara, i);
-      delay(5);
-    }
-    
-  if( porcentajeDeLuzAnterior > porcentaje)
-    for(i = (porcentajeDeLuzAnterior*128/100)-1; i >= (porcentaje*128/100); i--){
-      analogWrite(lampara, i);
-      delay(5);
-    }
-  porcentajeDeLuzAnterior = porcentaje;
+void prender_lampara(int porcentaje_recibido){
+//  int i;
+//  
+//  if( porcentajeDeLuzAnterior < porcentaje)
+//    for(i = (porcentajeDeLuzAnterior*128/100)+1; i<= (porcentaje*128/100); i++){
+//      analogWrite(lampara, i);
+//      delay(5);
+//    }
+//    
+//  if( porcentajeDeLuzAnterior > porcentaje)
+//    for(i = (porcentajeDeLuzAnterior*128/100)-1; i >= (porcentaje*128/100); i--){
+//      analogWrite(lampara, i);
+//      delay(5);
+//    }
+  porcentajeDeLuzAnterior = porcentaje*128/100;
 }
+
+void graduar_luz(){
+  int porcentaje_leido = analogRead(lampara);
+  porcentaje_escalado = porcentaje_leido*100/128; 
+  if(porcentaje_escalado == porcentajeDeLuzAnterior)
+    exit; 
+  if( porcentaje_escalado < porcentajeDeLuzAnterior){
+      int porcentaje = porcentaje_escalado + 1; 
+      analogWrite(lampara, porcentaje);
+  }else{
+      int porcentaje = porcentaje_escalado - 1; 
+      analogWrite(lampara, porcentaje);
+  }
+}
+
+
+
 
 /*
  * 255 es el 100% del voltaje proporcionado.
@@ -308,6 +326,7 @@ void chequear_buzzer(){
   }
 }
 
+
 /**
  * La idea de esta función ahora fue hacerla generica, despues solo tendría que ponerse
  * las llamadas a la función directamente, sin tanto calculo.
@@ -380,6 +399,11 @@ void loop(){
     tiempo_anterior_lecturaHumedad = tiempo;    
   }
 
+  if(intervalo_particular_cumplido(tiempo, tiempo_anterior_chequeo_luz, 5)){
+    graduar_luz();
+    tiempo_anterior_chequeo_luz = tiempo;    
+  }
+
   if ( intervalo_cumplido() ) {
     
     chequear_luminosidad();
@@ -409,13 +433,18 @@ void loop(){
          
       }else if( digitoLeidoBT == 'Z'){ //Cerrar la puerta
          prender_lampara(100);
-<<<<<<< HEAD
 
-=======
->>>>>>> 700025218b9483761ab6d05f7c7a1169cc795cee
       }
+        
+      Serial.write(digitoLeidoBT);
     }
+
     
+    if (Serial.available()){
+      digitoLeidoBT = Serial.read();
+      Bt1.write(digitoLeidoBT);
+    }
+
     tiempo_anterior = tiempo; 
   }
 }
