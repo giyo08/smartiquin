@@ -303,35 +303,6 @@ public class MainActivity extends AppCompatActivity {
 
         private void conectar(){
 
-            try {
-                if(bluetoothAdapter.isEnabled()){
-
-                    String dirMAC = "00:18:E4:35:5A:64";
-
-                    BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(dirMAC);
-
-                    try{
-                        bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-
-                    }catch (Exception e){
-                        mostrarMensaje(context,"Error al crear el socket");
-                    }
-
-                    try{
-                        bluetoothSocket.connect();
-                    }catch (Exception e){
-                        bluetoothSocket.close();
-                        mostrarMensaje(context,"Error al conectar");
-                    }
-
-                    try {
-                        Method method = bluetoothDevice.getClass().getMethod("createBond", (Class[]) null);
-                        method.invoke(bluetoothDevice, (Object[]) null);
-                    } catch (Exception e) {
-                        mostrarMensaje(context,"Error al sincronizar");
-                        e.printStackTrace();
-                    }
-
                     try{
                         connectedThread = new ConnectedThread(bluetoothSocket);
                         connectedThread.start();
@@ -354,10 +325,6 @@ public class MainActivity extends AppCompatActivity {
                         mostrarMensaje(context,"No se pudo iniciar la escucha de datos");
                     }
 
-                }
-            }catch (Exception e){
-                mostrarMensaje(context,"No se pudo conectar");
-            }
         }
 
         private void terminarConexion(){
