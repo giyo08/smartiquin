@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                         connectedThread = new ConnectedThread();
                         connectedThread.start();
 
-                        mostrarMensaje(context,"Conectado al arduino");
+                        //mostrarMensaje(context,"Conectado al arduino");
 
                     }catch (Exception e){
                         mostrarMensaje(context,"No se pudo conectar");
