@@ -12,37 +12,31 @@ import java.util.UUID;
 
 public class ConnectedThread extends Thread{
 
-    private final InputStream mmInStream;
-    private final OutputStream mmOutStream;
+    private OutputStream mmOutStream;
     private BluetoothAdapter bluetoothAdapter;
     public BluetoothSocket bluetoothSocket;
     private BluetoothDevice bluetoothDevice;
+    private InputStream tmpIn = null;
+    private OutputStream tmpOut = null;
 
     public ConnectedThread (){
 
-        InputStream tmpIn = null;
-        OutputStream tmpOut = null;
-
-        String dirMAC = "00:18:E4:35:5A:64";
+        ///String dirMAC = "00:18:E4:35:5A:64";
+        String dirMAC = "00:34:DA:E8:06:74";
         UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         bluetoothDevice = bluetoothAdapter.getRemoteDevice(dirMAC);
 
         try {
-            bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+            ///bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+            bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString(UUID.randomUUID().toString()));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        try
-        {
-            //Create I/O streams for connection
-            tmpIn = bluetoothSocket.getInputStream();
-            tmpOut = bluetoothSocket.getOutputStream();
-        } catch (IOException e) { }
-
-        mmInStream = tmpIn;
         mmOutStream = tmpOut;
 
     }
@@ -72,6 +66,13 @@ public class ConnectedThread extends Thread{
                 e.printStackTrace();
             }
 
+            try
+            {
+                //Create I/O streams for connection
+                tmpOut = bluetoothSocket.getOutputStream();
+            } catch (IOException e) { }
+
+            mmOutStream = tmpOut;
 
         }
     }

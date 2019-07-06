@@ -276,9 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class ConexionBluetooth {
 
-        private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         private BluetoothAdapter bluetoothAdapter;
-        private BluetoothSocket bluetoothSocket;
 
         private Context context;
 
@@ -330,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
         private void terminarConexion(){
 
             try {
-                bluetoothSocket.close();
+                connectedThread.bluetoothSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
