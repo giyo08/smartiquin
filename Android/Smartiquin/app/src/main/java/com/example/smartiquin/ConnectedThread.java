@@ -15,19 +15,31 @@ public class ConnectedThread extends Thread{
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private BluetoothAdapter bluetoothAdapter;
-    private BluetoothSocket bluetoothSocket;
+    public BluetoothSocket bluetoothSocket;
+    private BluetoothDevice bluetoothDevice;
 
-    public ConnectedThread (BluetoothSocket socket){
+    public ConnectedThread (){
 
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
-        bluetoothSocket = socket;
+
+        String dirMAC = "00:18:E4:35:5A:64";
+        UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+        bluetoothDevice = bluetoothAdapter.getRemoteDevice(dirMAC);
+
+        try {
+            bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         try
         {
             //Create I/O streams for connection
-            tmpIn = socket.getInputStream();
-            tmpOut = socket.getOutputStream();
+            tmpIn = bluetoothSocket.getInputStream();
+            tmpOut = bluetoothSocket.getOutputStream();
         } catch (IOException e) { }
 
         mmInStream = tmpIn;
@@ -37,19 +49,10 @@ public class ConnectedThread extends Thread{
 
     public void run()
     {
-        String dirMAC = "00:18:E4:35:5A:64";
-        UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+        //Si el bluetooth esta activado , inicio la conexion con el arduino
 
         if(bluetoothAdapter.isEnabled()) {
-            BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(dirMAC);
-
-            try {
-                bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
             try {
                 bluetoothSocket.connect();

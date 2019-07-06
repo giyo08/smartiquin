@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         private void conectar(){
 
                     try{
-                        connectedThread = new ConnectedThread(bluetoothSocket);
+                        connectedThread = new ConnectedThread();
                         connectedThread.start();
 
                         mostrarMensaje(context,"Conectado al arduino");
@@ -364,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
                     while(true) {
 
                         // Leo el inputstram del Bluetooth
-                        bytes += bluetoothSocket.getInputStream().read(buffer, bytes, buffer.length - bytes);
+                        bytes += connectedThread.bluetoothSocket.getInputStream().read(buffer, bytes, buffer.length - bytes);
 
                         // Convierto a string los datos recibidos
                         String strReceived = new String(buffer, 0, bytes);
