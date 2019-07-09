@@ -84,12 +84,7 @@ public class MainActivity extends AppCompatActivity {
         btnMeds.setOnClickListener(btnMedsListener);
 
         estadoBotiquin = E_CERRADO;
-
-        ///Set como esta el botiquin y habilito/deshabilito botones
-        if (estadoBotiquin == E_ABIERTO)
-            botiquinAbierto();
-        else
-            botiquinCerrado();
+        botiquinCerrado();
 
         ///Vibrador para el sensor shake
         v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
@@ -301,16 +296,25 @@ public class MainActivity extends AppCompatActivity {
 
         private void conectar(){
 
-                    try{
-                        connectedThread = new ConnectedThread();
-                        connectedThread.start();
+            try{
+                connectedThread = new ConnectedThread();
+                connectedThread.start();
 
-                        mostrarMensaje(context,"Conectado al arduino");
+                mostrarMensaje(context,"Conectado al arduino");
 
-                    }catch (Exception e){
-                        mostrarMensaje(context,"No se pudo conectar");
-                        e.printStackTrace();
-                    }
+            }catch (Exception e){
+                mostrarMensaje(context,"No se pudo conectar");
+                e.printStackTrace();
+            }
+
+            try {
+                ///Abro el hilo secundario para escuchar lo que llega del arduino
+                ThreadAsynctask hilo = new ThreadAsynctask();
+                hilo.execute();
+
+            } catch (Exception e) {
+                mostrarMensaje(context, "No se pudo iniciar la escucha de datos");
+            }
         }
 
         private void terminarConexion(){
@@ -332,271 +336,188 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(context,mensaje,Toast.LENGTH_SHORT).show();
         }
 
+        public class ThreadAsynctask extends AsyncTask<Void, String, Void> {
 
-        ///----------------------------HILO PARA LA CONEXION----------------------------///
+            @Override
+            protected void onPreExecute() {
+            }
 
-        public class ConnectedThread extends Thread{
-
-            private OutputStream mmOutStream;
-            private BluetoothAdapter bluetoothAdapter;
-            public BluetoothSocket bluetoothSocket;
-            private BluetoothDevice bluetoothDevice;
-            private OutputStream tmpOut = null;
-            private String dirMAC = "00:18:E4:35:5A:64";
-            private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-            public ConnectedThread (){
-
-                bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-                bluetoothDevice = bluetoothAdapter.getRemoteDevice(dirMAC);
-
-                try {
-                    bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+            @Override
+            protected Void doInBackground(Void... params) {
                 try
                 {
-                    //Create I/O streams for connection
-                    tmpOut = bluetoothSocket.getOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int bytes = 0;
 
-                } catch (IOException e) {
+                    // Recibe los valores de arduino tod0 el tiempo, hasta que termine la aplicación
+                    while(true) {
+
+                        // Leo el inputstram del Bluetooth
+                        bytes += connectedThread.bluetoothSocket.getInputStream().read(buffer, bytes, buffer.length - bytes);
+
+                        // Convierto a string los datos recibidos
+                        String strReceived = new String(buffer, 0, bytes);
+
+                        // Publico el progreso
+                        publishProgress(strReceived);
+
+                        // Reinicio el buffer
+                        buffer = new byte[1024];
+                        bytes = 0;
+
+                    }
+                }
+                catch (IOException e)
+                {
+                    mostrarMensaje(context,"No se pudo recibir datos");
                     e.printStackTrace();
                 }
 
-                mmOutStream = tmpOut;
-
+                return null;
             }
 
-            public void run()
-            {
-                //Inicio la conexion con el arduino
-
-                try {
-                    bluetoothSocket.connect();
-
-                    recibirDatos();
-
-                } catch (Exception e) {
-                    try {
-                        bluetoothSocket.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-
-                }
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                mostrarMensaje(context, "Finalizando escucha de datos");
             }
 
+            @Override
+            protected void onProgressUpdate(String... values) {
 
-            public void write(String input) {
-                byte[] msgBuffer = input.getBytes();           //converts entered String into bytes
-
-                try {
-                    mmOutStream.write(msgBuffer);                //write bytes over BT connection via outstream
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                evaluarDato(values[0]);
 
             }
-
-            public void recibirDatos(){
-                try{
-                    ///Abro el hilo secundario para escuchar lo que llega del arduino
-                    ThreadAsynctask hilo=new ThreadAsynctask();
-                    hilo.execute();
-
-                }catch (Exception e){
-                    mostrarMensaje(context,"No se pudo iniciar la escucha de datos");
-                }
-            }
-
-
-            ///----------------------------------HILO PARA RECIBIR MENSAJES BLUETOOTH---------------------------///
-
-            public class ThreadAsynctask extends AsyncTask<Void, String, Void> {
-
-                @Override
-                protected void onPreExecute() {
-                }
-
-                @Override
-                protected Void doInBackground(Void... params) {
-                    try
-                    {
-                        byte[] buffer = new byte[1024];
-                        int bytes = 0;
-
-                        // Recibe los valores de arduino tod0 el tiempo, hasta que termine la aplicación
-                        while(true) {
-
-                            // Leo el inputstram del Bluetooth
-                            bytes += connectedThread.bluetoothSocket.getInputStream().read(buffer, bytes, buffer.length - bytes);
-
-                            // Convierto a string los datos recibidos
-                            String strReceived = new String(buffer, 0, bytes);
-
-                            // Publico el progreso
-                            publishProgress(strReceived);
-
-                            // Reinicio el buffer
-                            buffer = new byte[1024];
-                            bytes = 0;
-
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        mostrarMensaje(context,"No se pudo recibir datos");
-                        e.printStackTrace();
-                    }
-
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    mostrarMensaje(context, "Finalizando escucha de datos");
-                }
-
-                @Override
-                protected void onProgressUpdate(String... values) {
-
-                    evaluarDato(values[0]);
-
-                }
-            }
-
-            private void evaluarDato(String dato){
-
-                switch (dato){
-
-                    case "1":{
-
-                        Notificacion n = new Notificacion();
-
-                        String [] medicamento = db.getMedicamento(1);
-
-                        Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
-
-                        String resultado = m.descontarMed();
-
-                        switch (resultado){
-                            case "BAJO":{
-                                n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
-                                db.deleteMedicamento("1");
-                                db.saveMedicamento(m);
-                                break;
-                            }
-                            case "OK":{
-                                db.deleteMedicamento("1");
-                                db.saveMedicamento(m);
-                                break;
-                            }
-                            case "SIN":{
-                                n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
-                                db.deleteMedicamento("1");
-                                break;
-                            }
-                        }
-
-                        break;
-
-                    }
-                    case "2":{
-
-                        Notificacion n = new Notificacion();
-
-                        String [] medicamento = db.getMedicamento(2);
-
-                        Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
-
-                        String resultado = m.descontarMed();
-
-                        switch (resultado){
-                            case "BAJO":{
-                                n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
-                                db.deleteMedicamento("2");
-                                db.saveMedicamento(m);
-                                break;
-                            }
-                            case "OK":{
-                                db.deleteMedicamento("2");
-                                db.saveMedicamento(m);
-                                break;
-                            }
-                            case "SIN":{
-                                n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
-                                db.deleteMedicamento("2");
-                                break;
-                            }
-                        }
-
-                        break;
-
-                    }
-                    case "3":{
-
-                        Notificacion n = new Notificacion();
-
-                        String [] medicamento = db.getMedicamento(3);
-
-                        Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
-
-                        String resultado = m.descontarMed();
-
-                        switch (resultado){
-                            case "BAJO":{
-                                n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
-                                db.deleteMedicamento("3");
-                                db.saveMedicamento(m);
-                                break;
-                            }
-                            case "OK":{
-                                db.deleteMedicamento("3");
-                                db.saveMedicamento(m);
-                                break;
-                            }
-                            case "SIN":{
-                                n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
-                                db.deleteMedicamento("3");
-                                break;
-                            }
-                        }
-
-                        break;
-
-                    }
-                    case "L":{
-
-                        sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
-
-                        Notificacion n = new Notificacion();
-
-                        n.generarNuevaNotificacion("ATENCIÓN", "Hay luz dentro del botiquin!!", context);
-
-                        break;
-                    }
-                    case "H":{
-
-                        sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
-
-                        Notificacion n = new Notificacion();
-
-                        n.generarNuevaNotificacion("ATENCIÓN", "La humedad dentro del botiquin es alta!!", context);
-
-                        break;
-                    }
-                    default:{
-
-                        break;
-                    }
-
-                }
-            }
-
         }
+
+        private void evaluarDato(String dato){
+
+            switch (dato){
+
+                case "1":{
+
+                    Notificacion n = new Notificacion();
+
+                    String [] medicamento = db.getMedicamento(1);
+
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
+
+                    String resultado = m.descontarMed();
+
+                    switch (resultado){
+                        case "BAJO":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                            db.deleteMedicamento("1");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "OK":{
+                            db.deleteMedicamento("1");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "SIN":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                            db.deleteMedicamento("1");
+                            break;
+                        }
+                    }
+
+                    break;
+
+                }
+                case "2":{
+
+                    Notificacion n = new Notificacion();
+
+                    String [] medicamento = db.getMedicamento(2);
+
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
+
+                    String resultado = m.descontarMed();
+
+                    switch (resultado){
+                        case "BAJO":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                            db.deleteMedicamento("2");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "OK":{
+                            db.deleteMedicamento("2");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "SIN":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                            db.deleteMedicamento("2");
+                            break;
+                        }
+                    }
+
+                    break;
+
+                }
+                case "3":{
+
+                    Notificacion n = new Notificacion();
+
+                    String [] medicamento = db.getMedicamento(3);
+
+                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
+
+                    String resultado = m.descontarMed();
+
+                    switch (resultado){
+                        case "BAJO":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                            db.deleteMedicamento("3");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "OK":{
+                            db.deleteMedicamento("3");
+                            db.saveMedicamento(m);
+                            break;
+                        }
+                        case "SIN":{
+                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                            db.deleteMedicamento("3");
+                            break;
+                        }
+                    }
+
+                    break;
+
+                }
+                case "L":{
+
+                    sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
+
+                    Notificacion n = new Notificacion();
+
+                    n.generarNuevaNotificacion("ATENCIÓN", "Hay luz dentro del botiquin!!", context);
+
+                    break;
+                }
+                case "H":{
+
+                    sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
+
+                    Notificacion n = new Notificacion();
+
+                    n.generarNuevaNotificacion("ATENCIÓN", "La humedad dentro del botiquin es alta!!", context);
+
+                    break;
+                }
+                default:{
+
+                    break;
+                }
+
+            }
+        }
+
+
     }
 
 }
