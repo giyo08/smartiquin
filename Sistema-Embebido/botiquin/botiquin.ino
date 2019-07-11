@@ -1,8 +1,16 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
-
-SoftwareSerial Bt1(10, 11); // RX | TX
-
+#define DETENER_ALARMA 'L'
+#define DESBLOQUEAR_PUERTA 'A'
+#define BLOQUEAR_PUERTA 'C'
+#define LUZ_INTERIOR_CERO_PORCIENTO 'P'
+#define LUZ_INTERIOR_CINCUENTA_PORCIENTO 'T'
+#define LUZ_INTERIOR_CIEN_PORCIENTO 'Z'
+#define SWITCH_UNO_ACTIVADO 1
+#define SWITCH_DOS_ACTIVADO 2
+#define SWITCH_TRES_ACTIVADO 3
+#define VALOR_HUMEDAD_NO_PERMITIDO 'H'
+#define VALOR_LUMINOSIDAD_NO_PERMITIDA 'L'
 
 /*
  * Sensores y actuadores asociados
@@ -17,6 +25,8 @@ byte LED_Red = 12;
 byte lampara = 9;
 byte electroiman = 8;
 byte DHTpin = 2;
+byte RX = 10;
+byte TX = 11; 
 
 byte fotoresistor = A4;
 
@@ -78,6 +88,26 @@ unsigned long tiempoAlarmaFueApagada;
 unsigned long intervaloTiempoSinSonarAlarma = 10000; // en milisegundos
 
 
+SoftwareSerial Bt1(RX, TX);
+
+
+void setup() {
+  pinMode(buzzer, OUTPUT);
+  pinMode(electroiman, OUTPUT);
+  pinMode(lampara, OUTPUT);
+  pinMode(LED_Green, OUTPUT);
+  pinMode(LED_Red, OUTPUT);
+  pinMode(switch01, INPUT);
+  pinMode(switch02, INPUT);
+  pinMode(switch03, INPUT);
+  pinMode(DHTpin, INPUT);
+  
+
+  cerrar_botiquin();
+  Serial.begin(9600);
+  Bt1.begin(9600); 
+  dht.begin();
+}
 
 
 /*
@@ -122,7 +152,7 @@ void chequear_humedad() {
   } else if ( humedadLeida > HUMEDAD_MAX ) {
       
       if( humedadNoPermitidaRecientemente ){
-        Bt1.write('H');
+        Bt1.write(VALOR_HUMEDAD_NO_PERMITIDO);
         humedadNoPermitidaRecientemente = false;
         alarmaDeHumedad = true;
       }
@@ -151,7 +181,7 @@ void chequear_luminosidad() {
   
   if ( !puertaAbierta && valorLuminosidadLeido > LUMINOSIDAD_MAX ){
     if( luzNoPermitidaRecientemente){
-      Bt1.write('L');
+      Bt1.write(VALOR_LUMINOSIDAD_NO_PERMITIDA);
       luzNoPermitidaRecientemente = false;
       alarmaDeLuz = true;
     }
@@ -167,13 +197,13 @@ void chequear_luminosidad() {
  * con el porcentaje requerido de luz.
  * Como no tiene resistencia, el 100% tendria que ser 128.
  */
-void prender_lampara(int porcentaje_recibido){
+void prender_lampara(int porcentaje){
   porcentajeDeLuzAnterior = porcentaje*128/100;
 }
 
 void graduar_luz(){
   int porcentaje_leido = analogRead(lampara);
-  porcentaje_escalado = porcentaje_leido*100/128; 
+  int porcentaje_escalado = porcentaje_leido*100/128; 
   if(porcentaje_escalado == porcentajeDeLuzAnterior)
     exit; 
   if( porcentaje_escalado < porcentajeDeLuzAnterior){
@@ -184,15 +214,6 @@ void graduar_luz(){
       analogWrite(lampara, porcentaje);
   }
 }
-
-
-
-
-/*
- * 255 es el 100% del voltaje proporcionado.
- * 128 es la mitad, en este caso 2,5v
- * 
- */
 
 /*
  * ******************** DOOR CONTROL ZONE *******************
@@ -253,7 +274,7 @@ void actuar_switch01() {
         /*
          * informo a la aplicación que se sacó algo
          */
-          Bt1.write('1');
+          Bt1.write(SWITCH_UNO_ACTIVADO);
       }   
     }
     else{ // el switch3 esta pulsado
@@ -269,7 +290,7 @@ void actuar_switch02() {
         /*
          * informo a la aplicación que se sacó algo
          */
-          Bt1.write('2');
+          Bt1.write(SWITCH_DOS_ACTIVADO);
       }   
     }
     else{ // el switch3 esta pulsado
@@ -285,7 +306,7 @@ void actuar_switch03() {
         /*
          * informo a la aplicación que se sacó algo
          */
-          Bt1.write('3');
+          Bt1.write(SWITCH_TRES_ACTIVADO);
       }   
     }
     else{ // el switch3 esta pulsado
@@ -354,28 +375,6 @@ void playNote(char note, int duration) {
  * ******************** CONTROL ZONE *******************
  */
 
-void setup() {
-  
-  pinMode(buzzer, OUTPUT);
-  pinMode(electroiman, OUTPUT);
-  pinMode(lampara, OUTPUT);
-  pinMode(LED_Green, OUTPUT);
-  pinMode(LED_Red, OUTPUT);
-  pinMode(switch01, INPUT);
-  pinMode(switch02, INPUT);
-  pinMode(switch03, INPUT);
-  pinMode(DHTpin, INPUT);
-  
-  cerrar_botiquin();
-  
-  delay (500) ;              // Espera antes de encender el modulo
-  
-  Serial.begin(9600);
-    
-  Bt1.begin(9600); 
-  dht.begin();
- 
-}
 
 void loop(){
   
@@ -404,23 +403,18 @@ void loop(){
          * Protocolo de mensajes
          */
          
-      if(digitoLeidoBT == 'L'){ // Parar de sonar la alarma
+      if(digitoLeidoBT == DETENER_ALARMA){
          alarmaApagada = true;
-      }else if( digitoLeidoBT== 'A'){ // Abrir la puerta
+      }else if( digitoLeidoBT== DESBLOQUEAR_PUERTA){
          abrir_botiquin();
-         
-      }else if( digitoLeidoBT == 'C'){ //Cerrar la puerta
+      }else if( digitoLeidoBT == BLOQUEAR_PUERTA){
          cerrar_botiquin();
-         
-      }else if( digitoLeidoBT == 'P'){ //Cerrar la puerta
+      }else if( digitoLeidoBT == LUZ_INTERIOR_CERO_PORCIENTO){
          prender_lampara(0);
-         
-      }else if( digitoLeidoBT == 'T'){ //Cerrar la puerta
+      }else if( digitoLeidoBT == LUZ_INTERIOR_CINCUENTA_PORCIENTO){
          prender_lampara(50);
-         
-      }else if( digitoLeidoBT == 'Z'){ //Cerrar la puerta
+      }else if( digitoLeidoBT == LUZ_INTERIOR_CIEN_PORCIENTO){
          prender_lampara(100);
-
       }
         
       Serial.write(digitoLeidoBT);
