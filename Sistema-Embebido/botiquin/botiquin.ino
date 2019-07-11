@@ -1,17 +1,20 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
-#define DETENER_ALARMA 'L'
-#define DESBLOQUEAR_PUERTA 'A'
-#define BLOQUEAR_PUERTA 'C'
-#define LUZ_INTERIOR_CERO_PORCIENTO 'P'
-#define LUZ_INTERIOR_CINCUENTA_PORCIENTO 'T'
-#define LUZ_INTERIOR_CIEN_PORCIENTO 'Z'
-#define SWITCH_UNO_ACTIVADO 1
-#define SWITCH_DOS_ACTIVADO 2
-#define SWITCH_TRES_ACTIVADO 3
-#define VALOR_HUMEDAD_NO_PERMITIDO 'H'
-#define VALOR_LUMINOSIDAD_NO_PERMITIDA 'L'
 
+// Constantes de interpretación de comunicación BT
+
+#define PARAR_ALARMA 'L'
+#define ABRIR_PUERTA 'A'
+#define CERRAR_PUERTA 'C'
+#define LAMPARA_APAGADA 'P'
+#define LAMPARA_PRENDIDA_A_MEDIAS 'T'
+#define LAMPARA_PRENDIDA 'Z'
+#define HUMEDAD_ELEVADA 'H'
+#define LUZ_ELEVADA 'L'
+#define SWITCH3_DESACTIVADO '3'
+#define SWITCH2_DESACTIVADO '2'
+#define SWITCH1_DESACTIVADO '1'
+  
 /*
  * Sensores y actuadores asociados
  */
@@ -29,6 +32,10 @@ byte RX = 10;
 byte TX = 11; 
 
 byte fotoresistor = A4;
+
+SoftwareSerial Bt1(RX, TX);
+
+
 
 /*
  * Sensor Temperatura y Humedad
@@ -53,10 +60,6 @@ boolean switch1SinPulsarRecientemente = true; // Variable de control de corte
 boolean switch2SinPulsarRecientemente = true; // Variable de control de corte
 boolean switch3SinPulsarRecientemente = true; // Variable de control de corte
 
-// Relacionadas con la lampara
-
-int porcentajeDeLuzAnterior = 0;
-
 // Relacionadas con el sensor de luz
 
 const int LUMINOSIDAD_MAX = 800; // luminosidad máxima admitida dentro del botiquín
@@ -64,19 +67,18 @@ boolean luzNoPermitidaRecientemente = true; // Variable de control de corte
 
 // Relacionadas con el sensor de temperatura y humedad
 
-byte HUMEDAD_MAX = 80; // humedad máxima permitida dentro del botiquín
+const byte HUMEDAD_MAX = 80; // humedad máxima permitida dentro del botiquín
 boolean humedadNoPermitidaRecientemente = true; // Variable de control de corte
 float humedadLeida;
 
 unsigned long tiempo_anterior_lecturaHumedad = 0;
-unsigned long tiempo_anterior_chequeo_luz = 0;
-const unsigned long intervaloLecturaHumedad = 5000;
+const unsigned long INTERVALO_LECTURA_HUMEDAD = 5000;
 
 // Relacionadas al tiempo y las esperas
 
 unsigned long tiempo = 0;
 unsigned long tiempo_anterior = 0;
-const unsigned long intervalo = 200;
+const unsigned long INTERVALO_LOOP_PRINCIPAL = 200;
 
 // Relacionadas con la alarma
 
@@ -85,10 +87,8 @@ boolean alarmaDeHumedad = false;
 boolean alarmaDeLuz = false;
 boolean alarmaApagadaRecientemente = true; // Variable de control de corte
 unsigned long tiempoAlarmaFueApagada;
-unsigned long intervaloTiempoSinSonarAlarma = 10000; // en milisegundos
+const unsigned long INTERVALO_ALARMA_SIN_SONAR = 10000; // en milisegundos
 
-
-SoftwareSerial Bt1(RX, TX);
 
 
 void setup() {
@@ -120,7 +120,7 @@ void setup() {
    y otro.
 */
 bool intervalo_cumplido() {
-  return ((tiempo - tiempo_anterior) > intervalo);
+  return ((tiempo - tiempo_anterior) > INTERVALO_LOOP_PRINCIPAL);
 }
 
 /**
@@ -152,11 +152,11 @@ void chequear_humedad() {
   } else if ( humedadLeida > HUMEDAD_MAX ) {
       
       if( humedadNoPermitidaRecientemente ){
-        Bt1.write(VALOR_HUMEDAD_NO_PERMITIDO);
+        Bt1.write(HUMEDAD_ELEVADA);
         humedadNoPermitidaRecientemente = false;
         alarmaDeHumedad = true;
       }
-        
+
   }else{
     alarmaDeHumedad = false;
     humedadNoPermitidaRecientemente = true;
@@ -181,7 +181,7 @@ void chequear_luminosidad() {
   
   if ( !puertaAbierta && valorLuminosidadLeido > LUMINOSIDAD_MAX ){
     if( luzNoPermitidaRecientemente){
-      Bt1.write(VALOR_LUMINOSIDAD_NO_PERMITIDA);
+      Bt1.write(LUZ_ELEVADA);
       luzNoPermitidaRecientemente = false;
       alarmaDeLuz = true;
     }
@@ -192,28 +192,20 @@ void chequear_luminosidad() {
   }
 }
 
+
 /*
  * En la aplicación de android tendríamos que mandar por msj el nivel de luz que querémos, y acá directamente llamar a esta función
  * con el porcentaje requerido de luz.
  * Como no tiene resistencia, el 100% tendria que ser 128.
+ * 255 es el 100% del voltaje proporcionado.
+ * 128 es la mitad, en este caso 2,5v
+ * 
  */
 void prender_lampara(int porcentaje){
-  porcentajeDeLuzAnterior = porcentaje*128/100;
+  int i = (porcentaje*128/100);
+  analogWrite(lampara, i);
 }
 
-void graduar_luz(){
-  int porcentaje_leido = analogRead(lampara);
-  int porcentaje_escalado = porcentaje_leido*100/128; 
-  if(porcentaje_escalado == porcentajeDeLuzAnterior)
-    exit; 
-  if( porcentaje_escalado < porcentajeDeLuzAnterior){
-      int porcentaje = porcentaje_escalado + 1; 
-      analogWrite(lampara, porcentaje);
-  }else{
-      int porcentaje = porcentaje_escalado - 1; 
-      analogWrite(lampara, porcentaje);
-  }
-}
 
 /*
  * ******************** DOOR CONTROL ZONE *******************
@@ -225,7 +217,7 @@ void cerrar_botiquin(){
   /*Encender led rojo*/
   puertaAbierta = false;
   cambiar_estado_puerta();
-  hacer_sonar_melodia("ccggaagc");
+  hacer_sonar_melodia();
 }
 
 void abrir_botiquin() {
@@ -234,7 +226,7 @@ void abrir_botiquin() {
   /*Encender led verder*/
   puertaAbierta = true;
   cambiar_estado_puerta();  
-  hacer_sonar_melodia("defaafaa");
+  hacer_sonar_melodia();
 }
 
 void cambiar_estado_puerta(){
@@ -274,13 +266,15 @@ void actuar_switch01() {
         /*
          * informo a la aplicación que se sacó algo
          */
-          Bt1.write(SWITCH_UNO_ACTIVADO);
+          Bt1.write(SWITCH1_DESACTIVADO);
       }   
     }
     else{ // el switch3 esta pulsado
       switch1SinPulsarRecientemente = true;
     }
 }
+
+
 
 void actuar_switch02() {
     byte switchPulsado = digitalRead(switch02); //1 => pulsado | 0 => no pulsado
@@ -290,7 +284,7 @@ void actuar_switch02() {
         /*
          * informo a la aplicación que se sacó algo
          */
-          Bt1.write(SWITCH_DOS_ACTIVADO);
+          Bt1.write(SWITCH2_DESACTIVADO);
       }   
     }
     else{ // el switch3 esta pulsado
@@ -306,7 +300,7 @@ void actuar_switch03() {
         /*
          * informo a la aplicación que se sacó algo
          */
-          Bt1.write(SWITCH_TRES_ACTIVADO);
+          Bt1.write(SWITCH3_DESACTIVADO);
       }   
     }
     else{ // el switch3 esta pulsado
@@ -321,73 +315,40 @@ void actuar_switch03() {
 
 void chequear_buzzer(){
   if(!alarmaApagada && (alarmaDeHumedad || alarmaDeLuz))
-    hacer_sonar_melodia("aaaffggd");
+    hacer_sonar_melodia();
   else{ //se apago la alarma 
     if(alarmaApagadaRecientemente){
       tiempoAlarmaFueApagada = tiempo;
       alarmaApagadaRecientemente = false;
     }
-    if(intervalo_particular_cumplido(tiempo, tiempoAlarmaFueApagada, intervaloTiempoSinSonarAlarma)){
+    if(intervalo_particular_cumplido(tiempo, tiempoAlarmaFueApagada, INTERVALO_ALARMA_SIN_SONAR)){
       alarmaApagada = false;
       alarmaApagadaRecientemente = true;
     }
   }
 }
 
-
 /**
  * La idea de esta función ahora fue hacerla generica, despues solo tendría que ponerse
- * las llamadas a la función directamente, sin tanto calculo.
- */
- void hacer_sonar_melodia(char notes[]) {
-    int length = 8; // the number of notes
-    //char notes[] = "ccggaagc";//"ccggaagffeeddc"; // a space represents a rest ccggaagffeeddc
-    int beats[] = {1,2,1,1,4,2,1,1};//{ 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 4 };
-    int tempo = 100;
+ * las llamadas a la función directamente.
+  */
   
-    for (int i = 0; i < length; i++) {
-    if (notes[i] == ' ') {
-      delay(beats[i] * tempo); // rest
-    } else {
-      playNote(notes[i], beats[i] * tempo);
-    }
-
-    // pause between notes
-    delay(tempo / 2);
-  }
+ void hacer_sonar_melodia() {
+    noTone(buzzer);
+    tone(buzzer, 1915);
 }
-
-void playNote(char note, int duration) {
-  char names[] = { 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'C' };
-  int tones[] = { 1915, 1700, 1519, 1432, 1275, 1136, 1014, 956 };
-  int i;
-  // play the tone corresponding to the note name
-  for (i = 0; i < 8; i++) {
-    if (names[i] == note) {
-      noTone(buzzer);
-      tone(buzzer, tones[i], duration);
-    }
-  }
-}
-
 
 /*
  * ******************** CONTROL ZONE *******************
  */
 
-
 void loop(){
   
   tiempo = millis();
 
-  if(intervalo_particular_cumplido(tiempo, tiempo_anterior_lecturaHumedad, intervaloLecturaHumedad)){
+  if(intervalo_particular_cumplido(tiempo, tiempo_anterior_lecturaHumedad, INTERVALO_LECTURA_HUMEDAD)){
     chequear_humedad();
     tiempo_anterior_lecturaHumedad = tiempo;    
-  }
-
-  if(intervalo_particular_cumplido(tiempo, tiempo_anterior_chequeo_luz, 5)){
-    graduar_luz();
-    tiempo_anterior_chequeo_luz = tiempo;    
   }
 
   if ( intervalo_cumplido() ) {
@@ -400,32 +361,29 @@ void loop(){
       digitoLeidoBT = Bt1.read();
       
         /*
-         * Protocolo de mensajes
+         * LOGICA DE INTERPRETACIÓN
          */
          
-      if(digitoLeidoBT == DETENER_ALARMA){
+      if(digitoLeidoBT == PARAR_ALARMA){ 
          alarmaApagada = true;
-      }else if( digitoLeidoBT== DESBLOQUEAR_PUERTA){
+         
+      }else if( digitoLeidoBT== ABRIR_PUERTA){ 
          abrir_botiquin();
-      }else if( digitoLeidoBT == BLOQUEAR_PUERTA){
+         
+      }else if( digitoLeidoBT == CERRAR_PUERTA){ 
          cerrar_botiquin();
-      }else if( digitoLeidoBT == LUZ_INTERIOR_CERO_PORCIENTO){
+         
+      }else if( digitoLeidoBT == LAMPARA_APAGADA){ 
          prender_lampara(0);
-      }else if( digitoLeidoBT == LUZ_INTERIOR_CINCUENTA_PORCIENTO){
+         
+      }else if( digitoLeidoBT == LAMPARA_PRENDIDA_A_MEDIAS){ 
          prender_lampara(50);
-      }else if( digitoLeidoBT == LUZ_INTERIOR_CIEN_PORCIENTO){
+         
+      }else if( digitoLeidoBT == LAMPARA_PRENDIDA){ 
          prender_lampara(100);
       }
-        
-      Serial.write(digitoLeidoBT);
     }
-
     
-    if (Serial.available()){
-      digitoLeidoBT = Serial.read();
-      Bt1.write(digitoLeidoBT);
-    }
-
     tiempo_anterior = tiempo; 
   }
 }
