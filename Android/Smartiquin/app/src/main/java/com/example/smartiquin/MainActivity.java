@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import android.util.Log;
+
 public class MainActivity extends AppCompatActivity {
 
     ///Botones, switchs, textViews
@@ -198,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         v.vibrate(100);
 
                     } else {
+
                         conexionBluetooth.enviarMensaje("C");
                         botiquinCerrado();
                         sm.unregisterListener(luzSensorListener);
@@ -295,11 +298,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void conectar(){
-
+            mostrarMensaje(context,"Intentando conectar a arduino por bluetooth...");
             try{
                 connectedThread = new ConnectedThread();
                 connectedThread.start();
-
                 mostrarMensaje(context,"Conectado al arduino");
 
             }catch (Exception e){
@@ -329,14 +331,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void enviarMensaje(String mensaje){
-            connectedThread.write(mensaje);
+            try {
+                connectedThread.write(mensaje);
+            } catch(NullPointerException e){
+                mostrarMensaje(context, "No esta establecida la conexion con el botiquin");
+            }
         }
 
         private void mostrarMensaje (Context context, String mensaje){
             Toast.makeText(context,mensaje,Toast.LENGTH_SHORT).show();
         }
 
+        /**
+         * Thread Asincronic para atender los mensajes recibidos por bluetooth
+         */
         public class ThreadAsynctask extends AsyncTask<Void, String, Void> {
+
+            private final String TAG = ThreadAsynctask.class.getSimpleName();
+
 
             @Override
             protected void onPreExecute() {
@@ -348,12 +360,15 @@ public class MainActivity extends AppCompatActivity {
                 {
                     byte[] buffer = new byte[1024];
                     int bytes = 0;
+                    Log.d(TAG, "Escuhando bluetoothSocket\n");
 
                     // Recibe los valores de arduino tod0 el tiempo, hasta que termine la aplicación
                     while(true) {
 
                         // Leo el inputstram del Bluetooth
                         bytes += connectedThread.bluetoothSocket.getInputStream().read(buffer, bytes, buffer.length - bytes);
+
+
 
                         // Convierto a string los datos recibidos
                         String strReceived = new String(buffer, 0, bytes);
@@ -367,10 +382,8 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 }
-                catch (IOException e)
-                {
-                    mostrarMensaje(context,"No se pudo recibir datos");
-                    e.printStackTrace();
+                catch (IOException e){
+                    Log.d(TAG, "No esta conectado a Bluetooth\n");
                 }
 
                 return null;
@@ -383,7 +396,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected void onProgressUpdate(String... values) {
-
                 evaluarDato(values[0]);
 
             }
