@@ -266,9 +266,6 @@ public class MainActivity extends AppCompatActivity {
             if ((tiempoAct - ultMedicionLuz) > 3000) {
                 ultMedicionLuz = tiempoAct;
 
-
-
-
                 if (event.values[0] < 100) {
                     conexionBluetooth.enviarMensaje(M_LAMPARA_PRENDIDA);
                     Toast.makeText(getApplicationContext(),"Luz en: " + event.values[0] ,Toast.LENGTH_SHORT).show();
@@ -322,7 +319,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void encenderBT(){
-
             if(!bluetoothAdapter.isEnabled()){
                 Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 ((Activity)context).startActivityForResult(intent,1);
@@ -330,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void conectar(){
-            mostrarMensaje(context,"Intentando conectaxion con el Botiquin por bluetooth...");
+            mostrarMensaje(context,"Intentando conexion con el Botiquin por bluetooth...");
             try{
                 connectedThread = new ConnectedThread();
                 connectedThread.start();
