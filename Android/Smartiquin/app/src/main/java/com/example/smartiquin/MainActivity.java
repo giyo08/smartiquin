@@ -53,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String M_LAMPARA_PRENDIDA = "Z";
     private static final String M_PROXIMIDAD_ELEVADA = "L";
     private static final String M_HUMEDAD_ELEVADA = "H";
+    private static final String M_NRO_SWITCH_UNO = "1";
+    private static final String M_NRO_SWITCH_DOS = "2";
+    private static final String M_NRO_SWITCH_TRES = "3";
 
 
     ///Senso
@@ -431,105 +434,53 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        private void controladorSwitch( String nro_switch){
+
+            int id = Integer.parseInt(nro_switch);
+
+            Notificacion n = new Notificacion();
+
+            String [] medicamento = db.getMedicamento(id);
+
+            Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
+
+            String resultado = m.descontarMed();
+
+            switch (resultado){
+                case "BAJO":{
+                    n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
+                    db.deleteMedicamento(nro_switch);
+                    db.saveMedicamento(m);
+                    break;
+                }
+                case "OK":{
+                    db.deleteMedicamento(nro_switch);
+                    db.saveMedicamento(m);
+                    break;
+                }
+                case "SIN":{
+                    n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
+                    db.deleteMedicamento(nro_switch);
+                    break;
+                }
+            }
+
+        }
+
         private void evaluarDato(String dato){
 
             switch (dato){
-
-                case "1":{
-
-                    Notificacion n = new Notificacion();
-
-                    String [] medicamento = db.getMedicamento(1);
-
-                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
-
-                    String resultado = m.descontarMed();
-
-                    switch (resultado){
-                        case "BAJO":{
-                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
-                            db.deleteMedicamento("1");
-                            db.saveMedicamento(m);
-                            break;
-                        }
-                        case "OK":{
-                            db.deleteMedicamento("1");
-                            db.saveMedicamento(m);
-                            break;
-                        }
-                        case "SIN":{
-                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
-                            db.deleteMedicamento("1");
-                            break;
-                        }
-                    }
-
+                case M_NRO_SWITCH_UNO:{
+                    controladorSwitch(dato);
                     break;
-
                 }
-                case "2":{
-
-                    Notificacion n = new Notificacion();
-
-                    String [] medicamento = db.getMedicamento(2);
-
-                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
-
-                    String resultado = m.descontarMed();
-
-                    switch (resultado){
-                        case "BAJO":{
-                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
-                            db.deleteMedicamento("2");
-                            db.saveMedicamento(m);
-                            break;
-                        }
-                        case "OK":{
-                            db.deleteMedicamento("2");
-                            db.saveMedicamento(m);
-                            break;
-                        }
-                        case "SIN":{
-                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
-                            db.deleteMedicamento("2");
-                            break;
-                        }
-                    }
-
+                case M_NRO_SWITCH_DOS:{
+                    controladorSwitch(dato);
                     break;
-
                 }
-                case "3":{
-
-                    Notificacion n = new Notificacion();
-
-                    String [] medicamento = db.getMedicamento(3);
-
-                    Medicamento m = new Medicamento(Integer.parseInt(medicamento[0]),medicamento[1],medicamento[2],medicamento[3],medicamento[4],medicamento[5]);
-
-                    String resultado = m.descontarMed();
-
-                    switch (resultado){
-                        case "BAJO":{
-                            n.generarNuevaNotificacion("ATENCIÓN", "Quedan solo "+m.getCantMed()+" "+ m.getNombre(), context);
-                            db.deleteMedicamento("3");
-                            db.saveMedicamento(m);
-                            break;
-                        }
-                        case "OK":{
-                            db.deleteMedicamento("3");
-                            db.saveMedicamento(m);
-                            break;
-                        }
-                        case "SIN":{
-                            n.generarNuevaNotificacion("ATENCIÓN", "Ya no quedan "+m.getNombre(), context);
-                            db.deleteMedicamento("3");
-                            break;
-                        }
-                    }
-
+                case M_NRO_SWITCH_TRES:{
+                    controladorSwitch(dato);
                     break;
-
                 }
                 case M_PROXIMIDAD_ELEVADA:{
 
