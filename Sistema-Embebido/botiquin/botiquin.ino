@@ -176,9 +176,7 @@ void chequear_humedad() {
 void chequear_luminosidad() {
   valorLuminosidadLeido = analogRead(fotoresistor);
 
-   Serial.println(valorLuminosidadLeido);
-   Serial.println("");
-  
+   
   if ( !puertaAbierta && valorLuminosidadLeido > LUMINOSIDAD_MAX ){
     if( luzNoPermitidaRecientemente){
       Bt1.write(LUZ_ELEVADA);
@@ -363,11 +361,14 @@ void loop(){
         /*
          * LOGICA DE INTERPRETACIÓN
          */
+      Serial.println("Mensaje recibido: " + digitoLeidoBT );
+
          
       if(digitoLeidoBT == PARAR_ALARMA){ 
          alarmaApagada = true;
          
       }else if( digitoLeidoBT== ABRIR_PUERTA){ 
+        
          abrir_botiquin();
          
       }else if( digitoLeidoBT == CERRAR_PUERTA){ 

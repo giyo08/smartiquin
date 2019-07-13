@@ -19,7 +19,7 @@
     <string name="btnEliminar">Eliminar Medicamento</string>
     <string name="textViewSwitch">Posicion</string>
     <string name="textViewRegistro">Registro de Medicamento</string>
-    <string name="btnConectarArduino">Conectar con Arduino</string>
+    <string name="btnConectarArduino">Conectar con Botiquin</string>
 
     <string-array name="switch_array">
         <item>1</item>

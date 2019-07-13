@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private static final Boolean E_CERRADO = false;
 
     ///String
-    private static final String S_ABIERTO = "ABIERTO";
-    private static final String S_CERRADO = "CERRADO";
+    private static final String S_ABIERTO = "[x]ABIERTO";
+    private static final String S_CERRADO = "[ ]CERRADO";
     private static final String S_ABRIR = "Abrir";
     private static final String S_CERRAR = "Cerrar";
 
@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     ///Variables para Shake
     private long ultShake = 0;
+    private long ultMedicionLuz = 0;
     private Vibrator v;
 
     ///Bluetooth
@@ -135,15 +136,17 @@ public class MainActivity extends AppCompatActivity {
 
             if (estadoBotiquin == E_ABIERTO) {
                 ///Envio mensaje para que cierre el botiquin y desactivo el sensor de luz.
-                conexionBluetooth.enviarMensaje("C");
-                botiquinCerrado();
-                sm.unregisterListener(luzSensorListener);
+                if(conexionBluetooth.enviarMensaje("C")) {
+                    botiquinCerrado();
+                    sm.unregisterListener(luzSensorListener);
+                }
 
             } else {
                 ///Envio mensaje para que abra el botiquin y activo el sensor de luz.
-                conexionBluetooth.enviarMensaje("A");
-                botiquinAbierto();
-                sm.registerListener(luzSensorListener,sensorLuz,SensorManager.SENSOR_DELAY_NORMAL);
+                if(conexionBluetooth.enviarMensaje("A")) {
+                    botiquinAbierto();
+                    sm.registerListener(luzSensorListener, sensorLuz, SensorManager.SENSOR_DELAY_NORMAL);
+                }
 
             }
 
@@ -194,17 +197,19 @@ public class MainActivity extends AppCompatActivity {
                     ultShake = tiempoAct;
 
                     if (estadoBotiquin == E_CERRADO) {
-                        conexionBluetooth.enviarMensaje("A");
-                        botiquinAbierto();
-                        sm.registerListener(luzSensorListener,sensorLuz,SensorManager.SENSOR_DELAY_NORMAL);
-                        v.vibrate(100);
+                        if(conexionBluetooth.enviarMensaje("A")) {
+                            botiquinAbierto();
+                            sm.registerListener(luzSensorListener, sensorLuz, SensorManager.SENSOR_DELAY_NORMAL);
+                            v.vibrate(100);
+                        }
 
                     } else {
 
-                        conexionBluetooth.enviarMensaje("C");
-                        botiquinCerrado();
-                        sm.unregisterListener(luzSensorListener);
-                        v.vibrate(100);
+                        if(conexionBluetooth.enviarMensaje("C")) {
+                            botiquinCerrado();
+                            sm.unregisterListener(luzSensorListener);
+                            v.vibrate(100);
+                        }
 
                     }
                 }
@@ -223,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
             if (sensorEvent.values[0] < sensorProx.getMaximumRange()) {
-
                 conexionBluetooth.enviarMensaje("L");
             }
         }
@@ -239,12 +243,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSensorChanged(SensorEvent event) {
 
-            if(event.values[0]<100){
-                conexionBluetooth.enviarMensaje("Z");
-            }else if(event.values[0]>210){
-                conexionBluetooth.enviarMensaje("P");
-            }else{
-                conexionBluetooth.enviarMensaje("T");
+            long tiempoAct = System.currentTimeMillis();
+
+            if ((tiempoAct - ultMedicionLuz) > 30000) {
+                ultMedicionLuz = tiempoAct;
+
+                if (event.values[0] < 100) {
+                    conexionBluetooth.enviarMensaje("Z");
+                } else if (event.values[0] > 210) {
+                    conexionBluetooth.enviarMensaje("P");
+                } else {
+                    conexionBluetooth.enviarMensaje("T");
+                }
             }
 
         }
@@ -298,14 +308,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void conectar(){
-            mostrarMensaje(context,"Intentando conectar a arduino por bluetooth...");
+            mostrarMensaje(context,"Intentando conectaxion con el Botiquin por bluetooth...");
             try{
                 connectedThread = new ConnectedThread();
                 connectedThread.start();
-                mostrarMensaje(context,"Conectado al arduino");
+                mostrarMensaje(context,"Conectado al botiquin");
 
             }catch (Exception e){
-                mostrarMensaje(context,"No se pudo conectar");
+                mostrarMensaje(context,"No se pudo conectar al botiquin");
                 e.printStackTrace();
             }
 
@@ -330,12 +340,14 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        private void enviarMensaje(String mensaje){
+        private boolean enviarMensaje(String mensaje){
             try {
                 connectedThread.write(mensaje);
             } catch(NullPointerException e){
                 mostrarMensaje(context, "No esta establecida la conexion con el botiquin");
+                return false;
             }
+            return true;
         }
 
         private void mostrarMensaje (Context context, String mensaje){
