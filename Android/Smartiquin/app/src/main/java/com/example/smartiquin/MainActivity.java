@@ -393,7 +393,6 @@ public class MainActivity extends AppCompatActivity {
                     int bytes = 0;
                     Log.d(TAG, "Escuhando bluetoothSocket\n");
 
-                    // Recibe los valores de arduino tod0 el tiempo, hasta que termine la aplicación
                     while(true) {
 
                         // Leo el inputstram del Bluetooth
