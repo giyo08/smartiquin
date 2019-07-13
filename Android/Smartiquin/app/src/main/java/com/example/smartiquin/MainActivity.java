@@ -46,6 +46,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String S_ABRIR = "Abrir";
     private static final String S_CERRAR = "Cerrar";
 
+    private static final String M_CERRAR_PUERTA = "C";
+    private static final String M_ABRIR_PUERTA = "A";
+    private static final String M_LAMPARA_APAGADA = "P";
+    private static final String M_LAMPARA_A_MEDIAS = "T";
+    private static final String M_LAMPARA_PRENDIDA = "Z";
+    private static final String M_PROXIMIDAD_ELEVADA = "L";
+    private static final String M_HUMEDAD_ELEVADA = "H";
+
+
     ///Senso
     private SensorManager sm;
     private Sensor sensorShake;
@@ -136,14 +145,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (estadoBotiquin == E_ABIERTO) {
                 ///Envio mensaje para que cierre el botiquin y desactivo el sensor de luz.
-                if(conexionBluetooth.enviarMensaje("C")) {
+                if(conexionBluetooth.enviarMensaje(M_CERRAR_PUERTA)) {
                     botiquinCerrado();
                     sm.unregisterListener(luzSensorListener);
                 }
 
             } else {
                 ///Envio mensaje para que abra el botiquin y activo el sensor de luz.
-                if(conexionBluetooth.enviarMensaje("A")) {
+                if(conexionBluetooth.enviarMensaje(M_ABRIR_PUERTA)) {
                     botiquinAbierto();
                     sm.registerListener(luzSensorListener, sensorLuz, SensorManager.SENSOR_DELAY_NORMAL);
                 }
@@ -197,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                     ultShake = tiempoAct;
 
                     if (estadoBotiquin == E_CERRADO) {
-                        if(conexionBluetooth.enviarMensaje("A")) {
+                        if(conexionBluetooth.enviarMensaje(M_ABRIR_PUERTA)) {
                             botiquinAbierto();
                             sm.registerListener(luzSensorListener, sensorLuz, SensorManager.SENSOR_DELAY_NORMAL);
                             v.vibrate(100);
@@ -205,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
 
-                        if(conexionBluetooth.enviarMensaje("C")) {
+                        if(conexionBluetooth.enviarMensaje(M_CERRAR_PUERTA)) {
                             botiquinCerrado();
                             sm.unregisterListener(luzSensorListener);
                             v.vibrate(100);
@@ -227,8 +236,14 @@ public class MainActivity extends AppCompatActivity {
     SensorEventListener proximitySensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
+
+            /*if(sensorProx == null) {
+
+                finish(); // Close app
+            }*/
+
             if (sensorEvent.values[0] < sensorProx.getMaximumRange()) {
-                conexionBluetooth.enviarMensaje("L");
+                conexionBluetooth.enviarMensaje(M_PROXIMIDAD_ELEVADA);
             }
         }
 
@@ -245,15 +260,19 @@ public class MainActivity extends AppCompatActivity {
 
             long tiempoAct = System.currentTimeMillis();
 
-            if ((tiempoAct - ultMedicionLuz) > 30000) {
+            if ((tiempoAct - ultMedicionLuz) > 3000) {
                 ultMedicionLuz = tiempoAct;
 
+
+
+
                 if (event.values[0] < 100) {
-                    conexionBluetooth.enviarMensaje("Z");
+                    conexionBluetooth.enviarMensaje(M_LAMPARA_PRENDIDA);
+                    Toast.makeText(getApplicationContext(),"Luz en: " + event.values[0] ,Toast.LENGTH_SHORT).show();
                 } else if (event.values[0] > 210) {
-                    conexionBluetooth.enviarMensaje("P");
+                    conexionBluetooth.enviarMensaje(M_LAMPARA_APAGADA);
                 } else {
-                    conexionBluetooth.enviarMensaje("T");
+                    conexionBluetooth.enviarMensaje(M_LAMPARA_A_MEDIAS);
                 }
             }
 
@@ -513,7 +532,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 }
-                case "L":{
+                case M_PROXIMIDAD_ELEVADA:{
 
                     sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
 
@@ -523,7 +542,7 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 }
-                case "H":{
+                case M_HUMEDAD_ELEVADA:{
 
                     sm.registerListener(proximitySensorListener,sensorProx,SensorManager.SENSOR_DELAY_NORMAL);
 
